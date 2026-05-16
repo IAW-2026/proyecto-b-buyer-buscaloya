@@ -40,3 +40,8 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 .env*.local
+
+CONTEXT_IA.md
+03-apis.md
+04-modelo-de-datos.md
+05-usuarios.md

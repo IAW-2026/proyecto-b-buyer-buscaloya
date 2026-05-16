@@ -46,7 +46,6 @@ export async function POST(req: Request) {
     if (!clientId || !email) {
         return new Response('Missing user id or email in payload', { status: 400 });
     }
-    console.log(`Procesando evento de creación de usuario: ${clientId} - ${email} - ${name}`);
     try {
     await sql`
         INSERT INTO users (client_id, name, email, role)
