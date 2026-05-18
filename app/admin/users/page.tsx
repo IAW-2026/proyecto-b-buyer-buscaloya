@@ -1,6 +1,7 @@
 import { fetchUsersPages } from '@/app/admin/users/queries';
 import UsersTable from '@/app/ui/admin/users-table';
 import Pagination from '@/app/ui/admin/Pagination';
+import Search from '@/app/ui/admin/Search';
 import { Suspense } from 'react';
 
 export const dynamic = 'force-dynamic';
@@ -27,18 +28,8 @@ export default async function UsersAdminPage({
             </span>
           </div>
 
-          {/* Formulario de búsqueda (GET) */}
-          <form method="get" action="/admin/users" className="mb-4">
-            <div className="flex gap-2">
-              <input
-                name="search"
-                defaultValue={search}
-                placeholder="Buscar por nombre..."
-                className="w-full rounded-md p-2 bg-neutral-800 text-white border border-neutral-700"
-              />
-              <button className="px-4 bg-blue-600 rounded-md">Buscar</button>
-            </div>
-          </form>
+          {/* Buscador con debounce (cliente) */}
+          <Search placeholder="Buscar por nombre..." />
 
           {/* Extraemos la tabla a un componente servidor */}
           <Suspense fallback={<div className="text-neutral-400">Cargando usuarios...</div>}>

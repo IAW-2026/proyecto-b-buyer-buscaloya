@@ -22,7 +22,6 @@ export default clerkMiddleware(async (auth, req) => {
   if (isAdminRoute(req)) {
     const authObject = await auth(); 
     const role = (authObject.sessionClaims as any)?.metadata?.role;
-    console.log(`Acceso a ruta admin: UserID=${authObject.userId}, Role=${role}, Path=${req.nextUrl.pathname}`);
     if (role !== 'system_admin') {
       // Si está logueado pero no es admin, lo mandamos al home
       const homeUrl = new URL('/', req.url);
