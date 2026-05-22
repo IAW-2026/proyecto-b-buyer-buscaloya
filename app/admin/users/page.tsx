@@ -1,7 +1,7 @@
 import { fetchUsersPages } from '@/app/admin/users/queries';
 import UsersTable from '@/app/ui/admin/users-table';
-import Pagination from '@/app/ui/admin/Pagination';
-import Search from '@/app/ui/admin/Search';
+import Pagination from '@/app/ui/Pagination';
+import Search from '@/app/ui/Search';
 import { Suspense } from 'react';
 
 export const dynamic = 'force-dynamic';
