@@ -2,13 +2,13 @@ import Link from 'next/link';
 import { fetchCatalog } from './queries';
 import ProductsGrid from '@/app/ui/stores/catalog/ProductsGrid';
 
-export default async function StoreCatalogPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  const { id: storeId } = await params;
+export default async function StoreCatalogPage(props: { params: { id: string } | Promise<{ id: string }>; searchParams: { storeName?: string } | Promise<{ storeName?: string }> }) {
+  const { params, searchParams } = props;
+  const { id: storeId } = await params as { id: string };
   const products = await fetchCatalog(storeId);
+
+  const sp = await searchParams as { storeName?: string } | undefined;
+  let storeName = sp?.storeName;
 
   return (
     <main className="max-w-7xl mx-auto p-6">
@@ -24,7 +24,7 @@ export default async function StoreCatalogPage({
         <p className="text-gray-500 mt-1 text-sm">Mostrando productos disponibles</p>
       </div>
 
-      <ProductsGrid storeId={storeId} products={products} />
+      <ProductsGrid storeId={storeId} storeName={storeName} products={products} />
     </main>
   );
 }

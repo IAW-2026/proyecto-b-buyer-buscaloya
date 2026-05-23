@@ -1,27 +1,21 @@
 'use client';
 import Image from 'next/image';
-import { useState } from 'react';
 import { Product } from '@/app/stores/[id]/catalog/queries';
+import { useCart } from '@/app/providers/CartProvider';
 
-export default function ProductsGrid({ storeId, products }: { storeId: string; products: Product[] }) {
-  const [quantities, setQuantities] = useState<Record<string, number>>({});
+export default function ProductsGrid({ storeId, storeName, products }: { storeId: string; storeName?: string | null; products: Product[] }) {
+  const { add, setQuantity, getQuantity } = useCart();
 
-  function increment(productId: string, max: number) {
-    const key = `${storeId}:${productId}`;
-    setQuantities(prev => {
-      const cur = prev[key] || 0;
-      const next = Math.min(cur + 1, max);
-      return { ...prev, [key]: next };
-    });
+  function increment(productId: string, max: number, product?: Product) {
+    const cur = getQuantity(storeId, productId);
+    const next = Math.min(cur + 1, max);
+    setQuantity(storeId, productId, next, product);
   }
 
-  function decrement(productId: string) {
-    const key = `${storeId}:${productId}`;
-    setQuantities(prev => {
-      const cur = prev[key] || 0;
-      const next = Math.max(cur - 1, 0);
-      return { ...prev, [key]: next };
-    });
+  function decrement(productId: string, product?: Product) {
+    const cur = getQuantity(storeId, productId);
+    const next = Math.max(cur - 1, 0);
+    setQuantity(storeId, productId, next, product);
   }
   if (products.length === 0) {
     return (
@@ -35,7 +29,7 @@ export default function ProductsGrid({ storeId, products }: { storeId: string; p
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {products.map((product) => {
         const compositeKey = `${storeId}:${product.product_id}`;
-        const currentQty = quantities[compositeKey] || 0;
+        const currentQty = getQuantity(storeId, product.product_id);
         return (
         <div
           key={compositeKey}
@@ -88,7 +82,7 @@ export default function ProductsGrid({ storeId, products }: { storeId: string; p
               <div className="flex items-center gap-3">
                 <button
                   aria-label={`Eliminar una unidad de ${product.name}`}
-                  onClick={() => decrement(product.product_id)}
+                  onClick={() => decrement(product.product_id, { ...(product as any), storeName } as any)}
                   disabled={currentQty === 0}
                   className={
                     (currentQty === 0)
@@ -102,12 +96,12 @@ export default function ProductsGrid({ storeId, products }: { storeId: string; p
 
                 <div className="flex-1 text-center">
                   <div className="text-sm text-black">Cantidad</div>
-                  <div className="text-lg font-medium text-black">{quantities[compositeKey] || 0}</div>
+                  <div className="text-lg font-medium text-black">{currentQty}</div>
                 </div>
 
                 <button
                   aria-label={`Agregar una unidad de ${product.name}`}
-                  onClick={() => increment(product.product_id, product.stock)}
+                  onClick={() => increment(product.product_id, product.stock, { ...(product as any), storeName } as any)}
                   disabled={currentQty >= product.stock}
                   className={
                     (currentQty >= product.stock)
