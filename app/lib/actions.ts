@@ -3,6 +3,7 @@
 import sql from '@/app/lib/db';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
+import { auth } from '@clerk/nextjs/server';
 
 const UpdateUserSchema = z.object({
   client_id: z.string(),
@@ -84,4 +85,16 @@ export async function updateAddressAction(prevState: State | undefined, formData
   }
     revalidatePath(`/admin/users/${client_id}/edit`);
     return { success: true };
+}
+
+export async function getAddressesAction() {
+  try {
+    const { userId } = await auth();
+    if (!userId) return [];
+    const rows = await sql`SELECT address_id, title, street, city, lat, lng FROM addresses WHERE client_id = ${userId} ORDER BY title ASC`;
+    return rows;
+  } catch (err) {
+    console.error('getAddresses error:', err);
+    return [];
+  }
 }
