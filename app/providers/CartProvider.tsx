@@ -78,7 +78,6 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const handler = () => {
       try {
-        setItems([]);
         localStorage.removeItem(STORAGE_KEY);
       } catch {}
     };
