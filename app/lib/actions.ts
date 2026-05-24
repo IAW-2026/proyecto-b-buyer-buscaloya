@@ -200,16 +200,15 @@ export async function sendCartAction({ addressId, items }: { addressId: string; 
     throw err;
   }
 }
-
-export async function createOrderInDB(userId: string, addressId: string, data: any) {  
+async function createOrderInDB(userId: string, addressId: string, data: any) {  
   const purchaseId = data.payment_order_id;
   const sellerAmount = Number(data.amount ?? 0);
 
   const queries = [];
     // Insert purchase (PENDING)
     queries.push(sql`
-      INSERT INTO purchases (purchase_id, client_id, address_id, amount, status)
-      VALUES (${purchaseId}, ${userId}, ${addressId}, ${sellerAmount}, 'PENDING')
+      INSERT INTO purchases (purchase_id, client_id, address_id, amount)
+      VALUES (${purchaseId}, ${userId}, ${addressId}, ${sellerAmount})
     `);
 
     // Insert orders + items from seller packages
@@ -218,8 +217,8 @@ export async function createOrderInDB(userId: string, addressId: string, data: a
       const storeName = pkg.store_name ?? 'unknown-store';
 
       queries.push(sql`
-        INSERT INTO orders (order_id, purchase_id, store_name, status)
-        VALUES (${orderId}, ${purchaseId}, ${storeName}, 'PREPARING')
+        INSERT INTO orders (order_id, purchase_id, store_name)
+        VALUES (${orderId}, ${purchaseId}, ${storeName})
       `);
 
       for (const it of (pkg.items || [])) {
