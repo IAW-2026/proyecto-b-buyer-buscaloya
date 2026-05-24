@@ -3,17 +3,21 @@
 import React from 'react';
 import Image from 'next/image';
 import { useCart } from '@/app/providers/CartProvider';
-import { getAddressesAction } from '@/app/lib/actions';
+import { useRouter } from 'next/navigation';
+import { getAddressesAction, sendCartAction } from '@/app/lib/actions';
 
 type Address = { address_id: string; title?: string; street?: string; city?: string; lat?: number; lng?: number };
 
 export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
   const { items, setQuantity, remove, clear } = useCart();
+  const router = useRouter();
 
   const [addresses, setAddresses] = React.useState<Address[] | null>(null);
   const [loading, setLoading] = React.useState(false);
   const [loadError, setLoadError] = React.useState<string | null>(null);
   const [selectedAddressId, setSelectedAddressId] = React.useState<string | null>(null);
+  const [sending, setSending] = React.useState(false);
+  const [sendError, setSendError] = React.useState<string | null>(null);
 
   React.useEffect(() => {
     let mounted = true;
@@ -142,20 +146,29 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
             <button type="button" onClick={onClose} className="flex-1 py-2 rounded bg-gray-800 text-white">Cerrar</button>
             <button
               type="button"
-              onClick={() => {
-                if (confirm('¿Enviar pedido?')) {
-                  console.log('Sending mock order...');
-                  console.log('Address:', selectedAddressId);
-                  console.log('Items:', items);
-                  alert('¡Pedido enviado!');
-                  clear();
-                  onClose();
+              onClick={async () => {
+                if (!selectedAddressId) return;
+                if (!confirm('¿Enviar pedido?')) return;
+                setSending(true);
+                setSendError(null);
+                try {
+                    await sendCartAction({ addressId: selectedAddressId, items });
+                    onClose();
+                    // Navigate first, then clear the cart in the next tick to
+                    // avoid updating CartProvider state during Router render.
+                    router.push('/purchases');
+                    setTimeout(() => clear(), 0);
+                } catch (err) {
+                  console.error('Error sending cart:', err);
+                  setSendError('No se pudo enviar el pedido');
+                } finally {
+                  setSending(false);
                 }
               }}
-              disabled={items.length === 0 || !selectedAddressId || loading}
-              className={`flex-1 py-2 rounded font-medium ${items.length === 0 || !selectedAddressId || loading ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : 'bg-green-600 text-white hover:bg-green-700'}`}
+              disabled={items.length === 0 || !selectedAddressId || loading || sending}
+              className={`flex-1 py-2 rounded font-medium ${items.length === 0 || !selectedAddressId || loading || sending ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : 'bg-green-600 text-white hover:bg-green-700'}`}
             >
-              Enviar
+              {sending ? 'Enviando...' : 'Enviar'}
             </button>
           </div>
         </div>
