@@ -3,7 +3,7 @@ import Image from 'next/image';
 import { Product } from '@/app/lib/definitions';
 import { useCart } from '@/app/providers/CartProvider';
 
-export default function ProductsGrid({ storeId, storeName, products }: { storeId: string; storeName?: string | null; products: Product[] }) {
+export default function ProductsGrid({ storeId, storeName, storeImageUrl, products }: { storeId: string; storeName?: string | null; storeImageUrl?: string | null; products: Product[] }) {
   const { add, setQuantity, getQuantity } = useCart();
 
   function increment(productId: string, max: number, product?: Product) {
@@ -26,7 +26,19 @@ export default function ProductsGrid({ storeId, storeName, products }: { storeId
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div>
+      {storeName && (
+        <div className="flex items-center gap-4 mb-6">
+          {storeImageUrl ? (
+            <img src={storeImageUrl} alt={storeName} className="w-16 h-16 rounded-md object-cover" />
+          ) : (
+            <div className="w-16 h-16 bg-gray-100 rounded-md flex items-center justify-center text-gray-400">No Img</div>
+          )}
+          <h2 className="text-2xl font-bold">{storeName}</h2>
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {products.map((product) => {
         const compositeKey = `${storeId}:${product.product_id}`;
         const currentQty = getQuantity(storeId, product.product_id);
@@ -118,6 +130,7 @@ export default function ProductsGrid({ storeId, storeName, products }: { storeId
         </div>
       );
       })}
+      </div>
     </div>
   );
 }

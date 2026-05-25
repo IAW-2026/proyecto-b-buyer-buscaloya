@@ -56,11 +56,18 @@ export async function fetchMockStores() {
 export async function fetchMockCatalog(storeId: string) {
   await new Promise(r => setTimeout(r, 300));
   const products = MOCKED_PRODUCTS_BY_STORE[storeId] ?? [];
+  const store = MOCKED_STORES.find(s => s.id === storeId);
+  const payload = {
+    store_name: store?.name ?? null,
+    store_image_url: store?.image_url ?? null,
+    products,
+  };
+
   return {
     ok: true,
-    status: 200, 
-    json: async () => products,
-    text: async () => JSON.stringify(products), 
+    status: 200,
+    json: async () => payload,
+    text: async () => JSON.stringify(payload),
   };
 }
 
