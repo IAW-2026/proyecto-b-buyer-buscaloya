@@ -1,24 +1,9 @@
 // server
 import { auth } from '@clerk/nextjs/server';
+import { fetchMockStores } from '@/app/lib/mocks';
+import {Store} from '@/app/lib/definitions';
 
-export type Store = {
-  id: string;
-  name: string;
-  description: string;
-  category: string;
-  image_url?: string;
-};
-
-const ITEMS_PER_PAGE = 3;
-
-const MOCK_STORES: Store[] = [
-  { id: 'store-123', name: 'Pizzería Don Carlos', description: 'Las mejores pizzas...', category: 'Gastronomía', image_url: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?q=80&w=600&auto=format&fit=crop' },
-  { id: 'store-456', name: 'Librería El Ateneo', description: 'Textos escolares...', category: 'Librería', image_url: 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?q=80&w=600&auto=format&fit=crop' },
-  { id: 'store-789', name: 'TechStore', description: 'Insumos de computación...', category: 'Tecnología', image_url: 'https://images.unsplash.com/photo-1551650975-87deedd944c3?q=80&w=600&auto=format&fit=crop' },
-  { id: 'store-101', name: 'Kiosco Lo de Cacho', description: 'Golosinas...', category: 'Kiosco', image_url: 'https://images.unsplash.com/photo-1552820728-8b83f0c7b4e3?q=80&w=600&auto=format&fit=crop' },
-  { id: 'store-102', name: 'Roti Ya', description: 'Comida casera...', category: 'Gastronomía', image_url: 'https://images.unsplash.com/photo-1551288049-bebda4e38f74?q=80&w=600&auto=format&fit=crop' },
-  { id: 'store-103', name: 'Moda Actual', description: 'La mejor ropa...', category: 'Vestimenta', image_url: 'https://images.unsplash.com/photo-1523275335684-37898b67a9d9?q=80&w=600&auto=format&fit=crop' },
-];
+const ITEMS_PER_PAGE = 5;
 
 function applySearch(items: Store[], search?: string) {
   if (!search || search.trim() === '') return items;
@@ -39,13 +24,8 @@ async function fetchAllStoresFromSeller() {
   return Array.isArray(data) ? data : data.stores || [];
 }
 
-async function fetchMockStores() {
-  await new Promise(r => setTimeout(r, 300));
-  return MOCK_STORES;
-}
-
 export async function fetchStoresWithMeta(currentPage: number, search?: string) {
-  const isMocking = true; // Cambiar a false para usar la API real
+  const isMocking = process.env.USE_MOCKS === 'true'; // Variable de entorno
   const all = isMocking ? await fetchMockStores() : await fetchAllStoresFromSeller();
   const filtered = applySearch(all, search);
   const totalStores = filtered.length;
