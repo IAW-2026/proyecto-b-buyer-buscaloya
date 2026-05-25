@@ -14,10 +14,10 @@ const VALID_TRANSITIONS: Record<string, string[]> = {
 
 export async function PATCH(
   req: Request,
-  { params }: { params: Promise<{ order_id: string }> }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { order_id: orderId } = await params;
+    const { id: orderId } = await params;
     const now = new Date().toISOString();
 
     // 1. Autorización M2M (SERVICE_TOKEN)
