@@ -1,6 +1,6 @@
 'use client';
 import Image from 'next/image';
-import { Product } from '@/app/stores/[id]/catalog/queries';
+import { Product } from '@/app/lib/definitions';
 import { useCart } from '@/app/providers/CartProvider';
 
 export default function ProductsGrid({ storeId, storeName, products }: { storeId: string; storeName?: string | null; products: Product[] }) {

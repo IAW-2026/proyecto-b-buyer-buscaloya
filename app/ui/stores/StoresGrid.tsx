@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import Image from 'next/image';
-import { Store } from '@/app/stores/queries';
+import { Store } from '@/app/lib/definitions';
 
 export default function StoresGrid({ stores }: { stores: Store[] }) {
 
