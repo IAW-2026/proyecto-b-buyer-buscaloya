@@ -12,7 +12,7 @@ async function realFetchCatalog(storeId: string, token: string) {
     });
 }
 
-export async function fetchCatalog(storeId: string): Promise<Product[]> {
+export async function fetchCatalog(storeId: string): Promise<CatalogResponse> {
   const isMocking = process.env.USE_MOCKS === 'true'; // Variable de entorno
 
 
@@ -27,9 +27,9 @@ export async function fetchCatalog(storeId: string): Promise<Product[]> {
     if (!response.ok) throw new Error(`Error al obtener catálogo: ${response.status}`);
     
     const data: CatalogResponse = await response.json();
-    return Array.isArray(data) ? data : (data.products || []);
+    return data;
   } catch (error) {
     console.error('Error fetching catalog:', error);
-    return []; 
+    return { store_name: '', store_image_url: '', products: [] } as CatalogResponse;
   }
 }

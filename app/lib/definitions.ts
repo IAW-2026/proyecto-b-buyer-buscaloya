@@ -16,5 +16,7 @@ export interface Product {
 }
 
 export interface CatalogResponse {
+  store_name: string;
+  store_image_url: string;
   products: Product[];
 }
