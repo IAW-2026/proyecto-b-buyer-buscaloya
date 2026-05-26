@@ -48,6 +48,14 @@ const MOCKED_PRODUCTS_BY_STORE: Record<string, Array<{
   ]
 };
 
+export const MOCK_ROUTE = [
+  { lat: -38.7183, lng: -62.2663 }, // Punto de partida
+  { lat: -38.7175, lng: -62.2650 },
+  { lat: -38.7168, lng: -62.2641 },
+  { lat: -38.7155, lng: -62.2625 },
+  { lat: -38.7142, lng: -62.2610 }, // Destino
+];
+
 export async function fetchMockStores() {
   await new Promise(r => setTimeout(r, 300));
   return MOCKED_STORES;
