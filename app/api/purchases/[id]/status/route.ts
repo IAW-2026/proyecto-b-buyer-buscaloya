@@ -27,7 +27,7 @@ export async function PATCH(
     }
 
     const dbResult = await sql`
-      SELECT status FROM purchases WHERE purchase_id = ${purchaseId}
+      SELECT status FROM purchases WHERE purchase_id = ${purchaseId}::uuid
     `;
 
     if (dbResult.length === 0) {
@@ -61,13 +61,13 @@ export async function PATCH(
     await sql`
       UPDATE purchases 
       SET status = ${incomingStatus} 
-      WHERE purchase_id = ${purchaseId}
+      WHERE purchase_id = ${purchaseId}::uuid
     `;
 
     await sql`
       UPDATE orders 
       SET status = ${incomingStatus === 'PAID' ? 'PREPARING' : 'CANCELLED'} 
-      WHERE purchase_id = ${purchaseId}
+      WHERE purchase_id = ${purchaseId}::uuid
     `;
 
     return NextResponse.json({ 

@@ -79,35 +79,50 @@ export async function fetchMockCatalog(storeId: string) {
   };
 }
 
-export async function mokedSendCartAction(items: any[], stores: any[], payload: any) {
-  // Simula latencia
-  await new Promise((r) => setTimeout(r, 400));
+export async function mokedSendCartAction(items: any[], stores: any[]) {
+  // 1. Simular latencia de red (400ms) para una experiencia realista
+  await new Promise((resolve) => setTimeout(resolve, 400));
 
-  // Calcula amount (igual que la versión real)
-  const amount = (items || []).reduce((s: number, it: any) => s + (Number(it.productPrice ?? it.price ?? 0) * Number(it.quantity ?? 0)), 0);
+  // 2. Calcular el monto total (amount) de la compra usando los items del carrito
+  const amount = (items || []).reduce((total: number, it: any) => {
+    const price = Number(it.productPrice ?? it.price ?? 0);
+    const qty = Number(it.quantity ?? 0);
+    return total + (price * qty);
+  }, 0);
 
-  // Construye packages con store_name y product_name (fallbacks si faltan datos)
-  const packages = (stores || []).map((s: any, i: number) => {
-    const storeName = s.store_name ?? s.storeName ?? s.name ?? `store-${s.store_id}`;
-    const packagedItems = (s.items || []).map((it: any) => ({
-      product_name: it.product_name ?? it.productName ?? it.product_id ?? it.productId ?? String(it.product_id ?? it.productId ?? ''),
-      quantity: Number(it.quantity ?? 0),
-    }));
+  // 3. Construir los paquetes cruzando la información del payload con nuestros mocks locales
+  const packages = (stores || []).map((store: any) => {
+    // Buscamos el nombre real de la tienda en nuestro catálogo mockeado
+    const mockStore = MOCKED_STORES.find(s => s.id === store.store_id);
+    const storeName = mockStore?.name ?? `Tienda Descocnocida (${store.store_id})`;
+
+    const packagedItems = (store.items || []).map((it: any) => {
+      // Buscamos el nombre real del producto en nuestro catálogo mockeado
+      const mockProducts = MOCKED_PRODUCTS_BY_STORE[store.store_id] || [];
+      const mockProduct = mockProducts.find(p => p.product_id === it.product_id);
+      const productName = mockProduct?.name ?? `Producto (${it.product_id})`;
+
+      return {
+        product_name: productName,
+        quantity: Number(it.quantity ?? 0),
+      };
+    });
+
     return {
-      package_id: crypto.randomUUID(),
+      package_id: crypto.randomUUID(), // Generador nativo de UUIDs
       store_name: storeName,
       items: packagedItems,
     };
   });
 
+  // 4. Armar el cuerpo de la respuesta final
   const mockResponse = {
     payment_order_id: crypto.randomUUID(),
     amount,
     packages,
   };
 
-
-  // Devuelve un objeto que imita la Response de fetch
+  // 5. Devolver un objeto que imita exactamente la interfaz 'Response' de un fetch
   return {
     ok: true,
     status: 200,
