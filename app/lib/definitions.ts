@@ -30,8 +30,16 @@ export interface Order {
   purchase_id: string;
   store_name: string;
   status: OrderStatus;
-  total_amount: number;
   delivery_code?: number;
+  items?: OrderItem[];
+  buyer_lat?: number;
+  buyer_lng?: number;
+  buyer_street?: string;
+}
+
+export interface OrderItem {
+  product_name: string;
+  quantity: number;
 }
 
 export interface Purchase {
@@ -42,4 +50,14 @@ export interface Purchase {
   status: PurchaseStatus;
   created_at?: string;
   updated_at?: string;
+}
+
+export interface Location {
+  lat: number;
+  lng: number;
+}
+
+export interface LiveMapProps {
+  courierLocation: Location | null;
+  destination: Location & { street: string };
 }
