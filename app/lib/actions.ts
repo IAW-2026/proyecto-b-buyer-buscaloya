@@ -4,6 +4,7 @@ import sql from '@/app/lib/db';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { auth } from '@clerk/nextjs/server';
+import { mokedSendCartAction } from './mocks';
 
 const UpdateUserSchema = z.object({
   client_id: z.string(),
@@ -99,42 +100,6 @@ export async function getAddressesAction() {
   }
 }
 
-async function mokedSendCartAction(items: any[], stores: any[], payload: any) {
-  // Simula latencia
-  await new Promise((r) => setTimeout(r, 400));
-
-  // Calcula amount (igual que la versión real)
-  const amount = (items || []).reduce((s: number, it: any) => s + (Number(it.productPrice ?? it.price ?? 0) * Number(it.quantity ?? 0)), 0);
-
-  // Construye packages con store_name y product_name (fallbacks si faltan datos)
-  const packages = (stores || []).map((s: any, i: number) => {
-    const storeName = s.store_name ?? s.storeName ?? s.name ?? `store-${s.store_id}`;
-    const packagedItems = (s.items || []).map((it: any) => ({
-      product_name: it.product_name ?? it.productName ?? it.product_id ?? it.productId ?? String(it.product_id ?? it.productId ?? ''),
-      quantity: Number(it.quantity ?? 0),
-    }));
-    return {
-      package_id: crypto.randomUUID(),
-      store_name: storeName,
-      items: packagedItems,
-    };
-  });
-
-  const mockResponse = {
-    payment_order_id: crypto.randomUUID(),
-    amount,
-    packages,
-  };
-
-
-  // Devuelve un objeto que imita la Response de fetch
-  return {
-    ok: true,
-    status: 200,
-    json: async () => mockResponse,
-    text: async () => JSON.stringify(mockResponse),
-  };
-}
 
 async function realSendCartAction(token: string | null, payload: any) {
   // Retorna el Response del fetch para que el caller pueda leer .ok/.status/.json()
@@ -149,88 +114,122 @@ async function realSendCartAction(token: string | null, payload: any) {
 }
 
 
+//Función de ayuda (Helper) para estructurar los datos
+function buildSellerPayload(addr: any, userId: string, items: any[]) {
+  const storesMap: Record<string, { store_id: string; items: Array<{ product_id: string; quantity: number }> }> = {};
+  
+  for (const it of items || []) {
+    const sid = String(it.storeId ?? it.store_id ?? 'unknown');
+    if (!storesMap[sid]) storesMap[sid] = { store_id: sid, items: [] };
+    storesMap[sid].items.push({ 
+      product_id: it.productId ?? it.product_id ?? String(it.productId || ''), 
+      quantity: Number(it.quantity || 0) 
+    });
+  }
+
+  return {
+    buyer_address: {
+      city: addr.city,
+      street: addr.street,
+      lat: Number(addr.lat),
+      lng: Number(addr.lng),
+    },
+    buyer_id: userId,
+    stores: Object.values(storesMap),
+  };
+}
+
+//Orquestador Principal (Server Action)
 export async function sendCartAction({ addressId, items }: { addressId: string; items: any[] }) {
   try {
+    // Autenticación
     const authRes = await auth();
     const { userId, getToken } = authRes as any;
     if (!userId) throw new Error('Not authenticated');
 
+    // Obtener Dirección Base
     const [addr] = await sql`SELECT street, city, lat, lng FROM addresses WHERE address_id = ${addressId} AND client_id = ${userId}`;
     if (!addr) throw new Error('Address not found');
 
-    // Fragment items by storeId
-    const storesMap: Record<string, { store_id: string; items: Array<{ product_id: string; quantity: number }> }> = {};
-    for (const it of items || []) {
-      const sid = String(it.storeId ?? it.store_id ?? 'unknown');
-      if (!storesMap[sid]) storesMap[sid] = { store_id: sid, items: [] };
-      storesMap[sid].items.push({ product_id: it.productId ?? it.product_id ?? String(it.productId || ''), quantity: Number(it.quantity || 0) });
-    }
-    const stores = Object.values(storesMap);
+    // Construir el Payload (Delegado a la función helper)
+    const payload = buildSellerPayload(addr, userId, items);
 
-    const payload = {
-      buyer_address: {
-        city: addr.city,
-        street: addr.street,
-        lat: Number(addr.lat),
-        lng: Number(addr.lng),
-      },
-      buyer_id: userId,
-      stores,
-    };
-
-    const isMocking = true;
-    try {
-      const token = getToken ? await getToken() : null;
-      const resp = isMocking ? await mokedSendCartAction(items, stores, payload) : await realSendCartAction(token, payload);
-      if (!resp.ok) {
-        const text = await resp.text().catch(() => '');
-        throw new Error(`Seller API error: ${resp.status} ${text}`);
-      }
-      const data = await resp.json();
-      // Persist purchase and orders in DB and return purchaseId
-      const purchaseId = await createOrderInDB(userId, addressId, data);
-      return { sellerResponse: data, purchaseId };
-    } catch (err) {
-      console.error('Error calling Seller API:', err);
-      throw err;
+    // Consumir API del Vendedor (Mock o Real dinámicamente)
+    const isMocking = process.env.USE_MOCKS === 'true'; 
+    const token = getToken ? await getToken() : null;
+    
+    // Validación de regla de negocio (Una sola compra activa)
+    const activePurchases = await sql`
+      SELECT purchase_id FROM purchases 
+      WHERE client_id = ${userId} AND status NOT IN ('COMPLETED', 'CANCELLED')
+    `;
+    
+    if (activePurchases.length > 0) {
+      throw new Error('ACTIVE_PURCHASE_EXISTS');
     }
+
+    const resp = isMocking 
+      ? await mokedSendCartAction(items, payload.stores) 
+      : await realSendCartAction(token, payload);
+      
+    if (!resp.ok) {
+      const text = await resp.text().catch(() => '');
+      throw new Error(`Seller API error: ${resp.status} ${text}`);
+    }
+    
+    const data = await resp.json();
+
+    // Persistir en Base de Datos Local
+    const purchaseId = await createOrderInDB(userId, addressId, data);
+    
+    // Calcular URL de redirección
+    const externalPaymentsUrl = process.env.PAYMENTS_APP_URL;
+    
+    const redirectUrl = isMocking 
+      ? `/payments/${purchaseId}` // Va a tu pasarela simulada (que luego ejecuta simulatePaymentSuccess)
+      : `${externalPaymentsUrl}/checkout/${purchaseId}`; // Redirige a la app externa real de Payments
+    
+    // Devolvemos la URL al cliente
+    return { sellerResponse: data, purchaseId, redirectUrl };
     
   } catch (err) {
     console.error('sendOrderAction error:', err);
     throw err;
   }
 }
+
 async function createOrderInDB(userId: string, addressId: string, data: any) {  
   const purchaseId = data.payment_order_id;
   const sellerAmount = Number(data.amount ?? 0);
-
   const queries = [];
-    // Insert purchase (PENDING)
+
+  // Insertar compra global
+  queries.push(sql`
+    INSERT INTO purchases (purchase_id, client_id, address_id, amount)
+    VALUES (${purchaseId}, ${userId}, ${addressId}, ${sellerAmount})
+  `);
+
+  // Insertar paquetes (orders) e ítems
+  for (const pkg of (data.packages || [])) {
+    const orderId = pkg.package_id;
+    const storeName = pkg.store_name ?? 'unknown-store';
+
     queries.push(sql`
-      INSERT INTO purchases (purchase_id, client_id, address_id, amount)
-      VALUES (${purchaseId}, ${userId}, ${addressId}, ${sellerAmount})
+      INSERT INTO orders (order_id, purchase_id, store_name)
+      VALUES (${orderId}, ${purchaseId}, ${storeName})
     `);
 
-    // Insert orders + items from seller packages
-    for (const pkg of (data.packages || [])) {
-      const orderId = pkg.package_id;
-      const storeName = pkg.store_name ?? 'unknown-store';
-
+    for (const it of (pkg.items || [])) {
+      const productName = it.product_name;
+      const qty = Number(it.quantity ?? 0);
       queries.push(sql`
-        INSERT INTO orders (order_id, purchase_id, store_name)
-        VALUES (${orderId}, ${purchaseId}, ${storeName})
+        INSERT INTO order_items (order_id, product_name, quantity)
+        VALUES (${orderId}, ${productName}, ${qty})
       `);
-
-      for (const it of (pkg.items || [])) {
-        const productName = it.product_name;
-        const qty = Number(it.quantity ?? 0);
-        queries.push(sql`
-          INSERT INTO order_items (order_id, product_name, quantity)
-          VALUES (${orderId}, ${productName}, ${qty})
-        `);
-      }
     }
-try{
+  }
+
+  try {
     await sql.transaction(queries);
   } catch (dbErr) {
     console.error('Error saving purchase/orders:', dbErr);
@@ -238,4 +237,37 @@ try{
   }
 
   return purchaseId;
+}
+
+// Función de ayuda para simular el llamado a Payments en modo mock (Solo para desarrollo local o pruebas)
+export async function simulatePaymentStatusUpdate(purchaseId: string, status: 'PAID' | 'CANCELLED') {
+  try {
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+    
+    const response = await fetch(`${appUrl}/api/purchases/${purchaseId}/status`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${process.env.PAYMENTS_SERVICE_SECRET}` 
+      },
+      body: JSON.stringify({ status })
+    });
+
+    // Validamos primero si la respuesta falló
+    if (!response.ok) {
+      const errorText = await response.text(); // Leemos como texto por si es un HTML de error
+      console.error('El webhook devolvió un error de servidor:', errorText);
+      throw new Error(`Fallo en el Webhook (${response.status}): Ver logs del servidor.`);
+    }
+
+    const result = await response.json();
+    console.log(`[Sandbox Payments] Webhook ejecutado con éxito:`, result.message);
+
+    revalidatePath('/purchase');
+    return { success: true };
+    
+  } catch (error) {
+    console.error('Error en el simulador de pagos:', error);
+    throw new Error('No se pudo procesar la simulación de estado');
+  }
 }

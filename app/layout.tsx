@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import { ClerkProvider, Show, SignInButton, SignUpButton, UserButton } from '@clerk/nextjs'
-import CartButton from './ui/CartButton'
+import CartButton from './ui/cart/CartButton'
 import { Geist, Geist_Mono } from 'next/font/google'
 import './globals.css'
 import { CartProvider } from './providers/CartProvider'
