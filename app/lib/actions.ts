@@ -6,6 +6,10 @@ import { z } from 'zod';
 import { auth } from '@clerk/nextjs/server';
 import { mokedSendCartAction } from './mocks';
 
+// ------------------------------------------------------------------
+// LÓGICA DE USUARIOS
+// ------------------------------------------------------------------
+
 const UpdateUserSchema = z.object({
   client_id: z.string(),
   email: z.string(),
@@ -25,7 +29,7 @@ export async function updateUserAction(prevState: State | undefined, formData: F
     name: String(formData.get('name') || ''),
     phone: String(formData.get('phone') || '')
   });
-  console.log('Datos recibidos para actualización:', formData.get('client_id'), formData.get('email'), formData.get('name'), formData.get('phone'));
+  
   if (!parsedData.success) {
     return { success: false, error: 'Datos inválidos' };
   }
@@ -41,9 +45,16 @@ export async function updateUserAction(prevState: State | undefined, formData: F
     console.error('Error actualizando usuario:', error);
     return { success: false, error: 'No se pudo actualizar el usuario' };
   }
+  
+  // Recargamos ambas vistas (Admin y User)
   revalidatePath(`/admin/users/${client_id}/edit`);
+  revalidatePath(`/user`);
   return { success: true };
 }
+
+// ------------------------------------------------------------------
+// LÓGICA DE DIRECCIONES (CRUD)
+// ------------------------------------------------------------------
 
 const UpdateAddressSchema = z.object({
   address_id: z.string(),
@@ -71,21 +82,81 @@ export async function updateAddressAction(prevState: State | undefined, formData
     return { success: false, error: 'Datos inválidos' };
   }
     
-    const { address_id, client_id, title, street, city, lat, lng } = parsedData.data;
-    console.log('Datos recibidos para actualización de dirección:', address_id, client_id, title, street, city, lat, lng);
+  const { address_id, client_id, title, street, city, lat, lng } = parsedData.data;
   try {
     await sql`
       UPDATE addresses
       SET title = ${title}, street = ${street}, city = ${city}, lat = ${lat}, lng = ${lng}
       WHERE address_id = ${address_id}
     `;
-    
   } catch (error) {
     console.error('Error actualizando dirección:', error);
     return { success: false, error: 'No se pudo actualizar la dirección' };
   }
+  
+  // Recargamos ambas vistas (Admin y User)
+  revalidatePath(`/admin/users/${client_id}/edit`);
+  revalidatePath(`/user`);
+  return { success: true };
+}
+
+const CreateAddressSchema = z.object({
+  client_id: z.string(),
+  title: z.string().min(2).max(100),
+  street: z.string().min(2).max(200),
+  city: z.string().min(2).max(100),
+  // Valores por defecto para lat/lng si no usamos un mapa interactivo para elegir
+  lat: z.number().optional().default(-38.7183), 
+  lng: z.number().optional().default(-62.2663)
+});
+
+export async function createAddressAction(prevState: State | undefined, formData: FormData): Promise<State> {
+  const parsedData = CreateAddressSchema.safeParse({
+    client_id: String(formData.get('client_id')),
+    title: String(formData.get('title') || ''),
+    street: String(formData.get('street') || ''),
+    city: String(formData.get('city') || ''),
+    lat: Number(formData.get('lat')) || -38.7183,
+    lng: Number(formData.get('lng')) || -62.2663
+  });
+  
+  if (!parsedData.success) {
+    return { success: false, error: 'Datos de dirección inválidos' };
+  }
+    
+  const { client_id, title, street, city, lat, lng } = parsedData.data;
+  
+  try {
+    await sql`
+      INSERT INTO addresses (client_id, title, street, city, lat, lng)
+      VALUES (${client_id}, ${title}, ${street}, ${city}, ${lat}, ${lng})
+    `;
+  } catch (error) {
+    console.error('Error creando dirección:', error);
+    return { success: false, error: 'No se pudo guardar la dirección' };
+  }
+  
+  // Recargamos ambas vistas (Admin y User)
+  revalidatePath(`/admin/users/${client_id}/edit`);
+  revalidatePath(`/user`);
+  return { success: true };
+}
+
+export async function deleteAddressAction(address_id: string, client_id: string) {
+  try {
+    await sql`
+      DELETE FROM addresses 
+      WHERE address_id = ${address_id} AND client_id = ${client_id}
+    `;
+    
+    // Recargamos ambas vistas (Admin y User)
     revalidatePath(`/admin/users/${client_id}/edit`);
+    revalidatePath(`/user`);
     return { success: true };
+  } catch (error) {
+    console.error('Error borrando dirección:', error);
+    throw new Error('No se pudo eliminar la dirección');
+  }
 }
 
 export async function getAddressesAction() {
