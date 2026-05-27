@@ -3,15 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { updateAddressAction, createAddressAction, deleteAddressAction } from '@/app/lib/actions';
-
-type Address = {
-  address_id: string;
-  title?: string;
-  street?: string;
-  city?: string;
-  lat?: number;
-  lng?: number;
-};
+import { Address } from '@/app/lib/definitions';
 
 interface AddressManagerProps {
   clientId: string;

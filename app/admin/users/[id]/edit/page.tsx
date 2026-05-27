@@ -1,14 +1,13 @@
-﻿import sql from '@/app/lib/db';
-import { notFound } from 'next/navigation';
+﻿import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { EditUserForm } from '@/app/ui/admin/EditUserForm';
-import { EditAddressForm } from '@/app/ui/admin/EditAddressForm';
+import { UserProfileForm } from '@/app/ui/user/UserProfileForm'; 
+import AddressManager from '@/app/ui/user/AddressManager';
+import { getUserById, getUserAddresses } from '@/app/admin/users/[id]/edit/queries';
 
 export default async function EditUserPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
 
-  // Obtener usuario
-  const userResult = await sql`SELECT * FROM users WHERE client_id = ${id}`;
+  const userResult = await getUserById(id);
   const user = userResult[0];
 
   if (!user) {
@@ -16,42 +15,43 @@ export default async function EditUserPage({ params }: { params: Promise<{ id: s
   }
 
   // Obtener direcciones del usuario
-  const addresses = await sql`SELECT * FROM addresses WHERE client_id = ${id} ORDER BY title ASC`;
-  
+  const addresses = await getUserAddresses(id);
+
+  // Normalizamos las direcciones para el AddressManager
+  const normalizedAddresses = (addresses || []).map((r: any) => ({
+    address_id: String(r.address_id),
+    title: r.title ?? undefined,
+    street: r.street ?? undefined,
+    city: r.city ?? undefined,
+    lat: r.lat ? Number(r.lat) : undefined,
+    lng: r.lng ? Number(r.lng) : undefined,
+  }));
+
   return (
-    <div className="min-h-screen bg-black text-white py-10">
-      <div className="max-w-5xl mx-auto space-y-6">
+    <div className="min-h-screen bg-gray-50 text-gray-900 py-10">
+      <div className="max-w-5xl mx-auto space-y-6 px-4">
+        
+        {/* Encabezado y navegación */}
         <div className="flex items-center space-x-4 mb-4">
-          <Link href="/admin/users" className="text-neutral-400 hover:text-neutral-200">
-            &larr; Volver
+          <Link href="/admin/users" className="text-blue-600 hover:text-blue-800 font-medium transition-colors">
+            &larr; Volver al panel
           </Link>
-          <h1 className="text-2xl font-bold text-white">Detalles del Usuario</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Gestión de Usuario</h1>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Formulario de Datos Básicos */}
-          <div className="bg-neutral-800 p-6 rounded-lg shadow-sm border border-neutral-700">
-            <h2 className="text-lg font-semibold text-white mb-4">Información Personal</h2>
-            <EditUserForm user={user} />
+          {/* BLOQUE 1: Formulario Unificado de Datos Básicos */}
+          <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+            <h2 className="text-lg font-bold text-gray-900 mb-6">Información Personal</h2>
+            <UserProfileForm user={user} />
           </div>
 
-          {/* Lista de Direcciones */}
-          <div className="bg-neutral-800 p-6 rounded-lg shadow-sm border border-neutral-700">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-lg font-semibold text-white">Direcciones</h2>
-            </div>
-            
-            <div className="space-y-4">
-              {addresses.length === 0 ? (
-                <p className="text-sm text-neutral-400">Este usuario no tiene direcciones asociadas.</p>
-              ) : (
-                addresses.map((address) => (
-                  <EditAddressForm key={address.address_id} user={user} address={address} />
-                ))
-              )}
-            </div>
+          {/* BLOQUE 2: El Gestor Unificado de Direcciones (CRUD completo para el admin) */}
+          <div>
+             <AddressManager clientId={id} initialAddresses={normalizedAddresses} />
           </div>
         </div>
+
       </div>
     </div>
   );
