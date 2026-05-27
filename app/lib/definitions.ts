@@ -61,3 +61,20 @@ export interface LiveMapProps {
   courierLocation: Location | null;
   destination: Location & { street: string };
 }
+
+export type User = {
+  client_id: string;
+  name: string;
+  email: string;
+  phone?: string;
+  role?: string;
+};
+
+export type Address = {
+  address_id: string;
+  title?: string;
+  street?: string;
+  city?: string;
+  lat?: number;
+  lng?: number;
+};

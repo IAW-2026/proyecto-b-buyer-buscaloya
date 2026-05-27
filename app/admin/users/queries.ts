@@ -1,12 +1,5 @@
 import sql from '@/app/lib/db';
-
-export type User = {
-  client_id: string;
-  name: string;
-  email: string;
-  phone?: string;
-  role?: string;
-};
+import { User } from '@/app/lib/definitions';
 
 const ITEMS_PER_PAGE = 10;
 
