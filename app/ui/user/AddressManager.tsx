@@ -4,33 +4,49 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { updateAddressAction, createAddressAction, deleteAddressAction } from '@/app/lib/actions';
 import { Address } from '@/app/lib/definitions';
-
+import dynamic from 'next/dynamic';
+const AddressAutocomplete = dynamic(() => import('./AddressAutocomplete').then(mod => mod.AddressAutocomplete), { ssr: false });
 interface AddressManagerProps {
   clientId: string;
   initialAddresses: Address[];
 }
 
+const DEFAULT_CENTER = { lat: -38.7183, lng: -62.2663 };
+
 export default function AddressManager({ clientId, initialAddresses }: AddressManagerProps) {
   const router = useRouter();
   
-  // Sincronizamos el estado local con los datos que vienen del servidor
   const [addresses, setAddresses] = useState<Address[]>(initialAddresses);
   
   useEffect(() => {
     setAddresses(initialAddresses);
   }, [initialAddresses]);
   
-  // Estados para controlar el Modal (Ventana emergente)
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingAddress, setEditingAddress] = useState<Address | null>(null);
-  
-  // Estados para el formulario
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Unificamos el estado del formulario para controlar los inputs dinámicamente
+  const [formLocation, setFormLocation] = useState({
+    street: '',
+    city: 'Bahía Blanca',
+    lat: DEFAULT_CENTER.lat,
+    lng: DEFAULT_CENTER.lng
+  });
 
   const handleOpenModal = (address?: Address) => {
     setEditingAddress(address || null);
     setError(null);
+    
+    // Si estamos editando, precargamos los datos; si no, usamos los valores por defecto
+    setFormLocation({
+      street: address?.street || '',
+      city: address?.city || 'Bahía Blanca',
+      lat: address?.lat || DEFAULT_CENTER.lat,
+      lng: address?.lng || DEFAULT_CENTER.lng
+    });
+    
     setIsModalOpen(true);
   };
 
@@ -43,15 +59,25 @@ export default function AddressManager({ clientId, initialAddresses }: AddressMa
     if (!confirm('¿Estás seguro de que querés eliminar esta dirección?')) return;
     
     try {
-      // Actualización optimista (borramos de la UI al instante para que parezca rapidísimo)
       setAddresses(prev => prev.filter(a => a.address_id !== addressId));
-      
       await deleteAddressAction(addressId, clientId);
-      router.refresh(); // Refresca los datos en el servidor
+      router.refresh();
     } catch (err) {
       alert('Hubo un error al intentar eliminar la dirección.');
-      router.refresh(); // Si falla, volvemos a traer los datos reales
+      router.refresh();
     }
+  };
+
+  // Función que recibe los datos desde Mapbox
+  const handleLocationSelect = (data: { street: string; city: string; lat: number; lng: number }) => {
+    setFormLocation(prev => ({
+      ...prev,
+      lat: data.lat,
+      lng: data.lng,
+      // Si el mapa no devuelve calle/ciudad (ej. si solo arrastró el pin), mantenemos lo que ya estaba escrito
+      street: data.street || prev.street,
+      city: data.city || prev.city
+    }));
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -62,17 +88,20 @@ export default function AddressManager({ clientId, initialAddresses }: AddressMa
     const formData = new FormData(e.currentTarget);
     formData.append('client_id', clientId);
     
+    // Inyectamos las coordenadas ocultas directamente desde nuestro estado
+    formData.append('lat', formLocation.lat.toString());
+    formData.append('lng', formLocation.lng.toString());
+    
     if (editingAddress) {
       formData.append('address_id', editingAddress.address_id);
     }
 
-    // Decidimos qué Server Action ejecutar dependiendo de si estamos editando o creando
     const action = editingAddress ? updateAddressAction : createAddressAction;
     const result = await action(undefined, formData);
 
     if (result.success) {
       handleCloseModal();
-      router.refresh(); // Le pide a Next.js que vuelva a ejecutar el Server Component padre y actualice props
+      router.refresh();
     } else {
       setError(result.error || 'Ocurrió un error inesperado');
     }
@@ -130,7 +159,7 @@ export default function AddressManager({ clientId, initialAddresses }: AddressMa
       {/* Modal / Pop-up del Formulario */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
-          <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 animate-in fade-in zoom-in-95 duration-200">
+          <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 animate-in fade-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto">
             <h3 className="text-xl font-bold text-gray-900 mb-5">
               {editingAddress ? 'Editar Dirección' : 'Agregar Dirección'}
             </h3>
@@ -155,27 +184,41 @@ export default function AddressManager({ clientId, initialAddresses }: AddressMa
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition-shadow"
                 />
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Calle y Número</label>
-                <input 
-                  type="text" 
-                  name="street" 
-                  defaultValue={editingAddress?.street} 
-                  required
-                  placeholder="Ej: Av. Alem 1253"
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition-shadow"
+
+              {/* Integración del Mapa Interactivo Mapbox */}
+              <div className="mt-2 mb-2 p-4 bg-gray-50 rounded-xl border border-gray-200">
+                <AddressAutocomplete 
+                  initialLat={formLocation.lat} 
+                  initialLng={formLocation.lng} 
+                  onLocationSelect={handleLocationSelect}
                 />
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Ciudad</label>
-                <input 
-                  type="text" 
-                  name="city" 
-                  defaultValue={editingAddress?.city} 
-                  required
-                  placeholder="Ej: Bahía Blanca"
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition-shadow"
-                />
+              
+              {/* Inputs de solo lectura, se llenan desde el mapa */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="col-span-2 sm:col-span-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Calle y Número</label>
+                  <input 
+                    type="text" 
+                    name="street" 
+                    value={formLocation.street}
+                    readOnly
+                    required
+                    placeholder="Ej: Av. Alem 1253"
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-600 bg-gray-100 cursor-not-allowed focus:outline-none"
+                  />
+                </div>
+                <div className="col-span-2 sm:col-span-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Ciudad</label>
+                  <input 
+                    type="text" 
+                    name="city" 
+                    value={formLocation.city}
+                    readOnly
+                    required
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-600 bg-gray-100 cursor-not-allowed focus:outline-none"
+                  />
+                </div>
               </div>
               
               <div className="flex gap-3 mt-6">
