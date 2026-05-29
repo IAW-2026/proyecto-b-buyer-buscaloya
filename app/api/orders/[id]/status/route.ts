@@ -4,9 +4,7 @@ import sql from '@/app/lib/db';
 // Definimos el diccionario de transiciones válidas para proteger la lógica de negocio
 const VALID_TRANSITIONS: Record<string, string[]> = {
   'PAYMENT_PENDING': ['PREPARING', 'CANCELLED'],
-  'PREPARING': ['READY_FOR_PICKUP', 'CANCELLED'],
-  'READY_FOR_PICKUP': ['ON_THE_WAY', 'CANCELLED'],
-  'ON_THE_WAY': ['OUT_FOR_DELIVERY', 'CANCELLED'],
+  'PREPARING': ['OUT_FOR_DELIVERY', 'CANCELLED'],
   'OUT_FOR_DELIVERY': ['DELIVERED', 'CANCELLED'],
   'DELIVERED': [],
   'CANCELLED': []
