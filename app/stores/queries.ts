@@ -1,7 +1,7 @@
 // server
 import { auth } from '@clerk/nextjs/server';
 import { fetchMockStores } from '@/app/lib/mocks';
-import {Store} from '@/app/lib/definitions';
+import { Store } from '@/app/lib/definitions';
 
 const ITEMS_PER_PAGE = 5;
 
@@ -32,5 +32,36 @@ export async function fetchStoresWithMeta(currentPage: number, search?: string) 
   const totalPages = Math.max(1, Math.ceil(totalStores / ITEMS_PER_PAGE));
   const start = (currentPage - 1) * ITEMS_PER_PAGE;
   const stores = filtered.slice(start, start + ITEMS_PER_PAGE);
-  return { stores, totalPages};
+  return { stores, totalPages };
+}
+
+export async function fetchWeatherAlert() {
+  const apiKey = process.env.WEATHER_API_KEY;
+
+  try {
+    let isBadWeather = false;
+    let conditionText = '';
+
+    const res = await fetch(`http://api.weatherapi.com/v1/current.json?key=${apiKey}&q=Bahia Blanca&lang=es`, {
+      next: { revalidate: 1800 }
+    });
+
+    if (!res.ok) return null;
+
+    const data = await res.json();
+    conditionText = data.current?.condition?.text || '';
+    const conditionLower = conditionText.toLowerCase();
+
+    console.log("Condition: " + conditionLower);
+
+    isBadWeather = conditionLower.includes('lluvia') ||
+      conditionLower.includes('llovizna') ||
+      conditionLower.includes('tormenta') ||
+      (data.current?.precip_mm || 0) > 0;
+
+    return { conditionText, isBadWeather };
+  } catch (err) {
+    console.error("Error fetching weather data:", err);
+    return null;
+  }
 }
