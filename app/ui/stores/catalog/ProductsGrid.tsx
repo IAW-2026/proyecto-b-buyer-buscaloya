@@ -15,8 +15,8 @@ export default function ProductsGrid({
   
   if (products.length === 0) {
     return (
-      <div className="bg-gray-50 border border-gray-200 p-8 rounded-xl text-center">
-        <p className="text-gray-600 font-medium">Este comercio no tiene productos publicados actualmente.</p>
+      <div className="bg-white border border-gray-100 p-8 rounded-xl text-center">
+        <p className="text-gray-500 font-medium">Este comercio no tiene productos publicados actualmente.</p>
       </div>
     );
   }
@@ -36,7 +36,7 @@ export default function ProductsGrid({
       )}
 
       {/* Grilla de Componentes */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {products.map((product) => (
           <ProductCard 
             key={`${storeId}:${product.product_id}`}

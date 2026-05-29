@@ -26,7 +26,7 @@ export default async function StoresPage({ searchParams }: { searchParams: Promi
           </div>
         </div>
           <StoresGrid stores={stores} />
-        <div className="mt-8 flex justify-center">
+        <div className="mt-8">
           <Pagination totalPages={totalPages} currentPage={currentPage} search={search} />
         </div>
       </main>

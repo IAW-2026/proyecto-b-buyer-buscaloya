@@ -21,7 +21,7 @@ export default function AddressSelector({ loading, error, addresses, selectedId,
 
   return (
     <select 
-      className="w-full border border-gray-300 rounded p-2 text-sm text-black focus:ring-2 focus:ring-blue-500"
+      className="w-full border border-gray-300 rounded p-2 text-sm text-black focus:ring-2 focus:ring-rose-500"
       value={selectedId || ''} 
       onChange={(e) => onSelect(e.target.value)}
     >

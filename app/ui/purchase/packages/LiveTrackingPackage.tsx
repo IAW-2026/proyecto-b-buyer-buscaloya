@@ -55,12 +55,31 @@ export default function LiveTrackingPackage({ pkg }: { pkg: Order }) {
   return (
     <div className="bg-white border rounded-xl shadow-sm overflow-hidden">
       {/* Cabecera */}
-      <div className="bg-orange-500 p-6 text-white">
+      <div className="bg-rose-600 p-6 text-white">
         <h1 className="text-2xl font-bold">{pkg.store_name}</h1>
       </div>
 
       <div className="p-6">
+        {pkg.status === 'CANCELLED' && (
+          <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-8 rounded-r-lg">
+            <div className="flex">
+              <div className="flex-shrink-0">
+                <svg className="h-5 w-5 text-red-500" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div className="ml-3">
+                <h3 className="text-sm font-medium text-red-800">Paquete Cancelado</h3>
+                <p className="text-sm text-red-700 mt-1">
+                  Este pedido ha sido cancelado y ya no será entregado.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Barra de progreso (Stepper) */}
+        {pkg.status !== 'CANCELLED' && (
         <div className="mb-8">
           <div className="flex justify-between mb-2">
             {STATUS_STEPS.map((step, index) => {
@@ -68,7 +87,7 @@ export default function LiveTrackingPackage({ pkg }: { pkg: Order }) {
               return (
                 <div key={step} className="flex flex-col items-center w-1/5">
                   <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold mb-2 transition-colors ${
-                    isActive ? 'bg-orange-500 text-white' : 'bg-gray-200 text-gray-400'
+                    isActive ? 'bg-rose-600 text-white' : 'bg-gray-200 text-gray-400'
                   }`}>
                     {index + 1}
                   </div>
@@ -82,11 +101,30 @@ export default function LiveTrackingPackage({ pkg }: { pkg: Order }) {
           {/* Línea conectora */}
           <div className="relative mt[-40px] top-[-45px] left-[10%] w-[80%] h-1 bg-gray-200 -z-10">
             <div 
-              className="absolute top-0 left-0 h-full bg-orange-500 transition-all duration-500"
+              className="absolute top-0 left-0 h-full bg-rose-600 transition-all duration-500"
               style={{ width: `${(Math.max(0, currentStepIndex) / (STATUS_STEPS.length - 1)) * 100}%` }}
             />
           </div>
-        </div>
+          </div>
+        )}
+        {pkg.status === 'DELIVERED' && (
+          <div className="bg-green-50 border-l-4 border-green-500 p-4 mb-8 rounded-r-lg">
+            <div className="flex">
+              <div className="flex-shrink-0">
+                <svg className="h-5 w-5 text-green-500" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div className="ml-3">
+                <h3 className="text-sm font-medium text-green-800">Paquete Entregado</h3>
+                <p className="text-sm text-green-700 mt-1">
+                  Este paquete ya ha sido entregado con éxito. ¡Gracias por elegir BuscaLoYa!
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/*Detalle del contenido del paquete */}
         <div className="mb-8">
           <h3 className="text-sm font-bold uppercase tracking-wider text-gray-500 mb-3">
@@ -96,7 +134,7 @@ export default function LiveTrackingPackage({ pkg }: { pkg: Order }) {
             {pkg.items?.map((item: any, index: number) => (
               <li key={index} className="flex justify-between items-center p-4 text-sm">
                 <span className="font-medium text-gray-800">{item.product_name}</span>
-                <span className="bg-orange-100 text-orange-800 font-bold px-2.5 py-1 rounded-md">
+                <span className="bg-rose-100 text-rose-800 font-bold px-2.5 py-1 rounded-md">
                   x{item.quantity}
                 </span>
               </li>
@@ -104,14 +142,15 @@ export default function LiveTrackingPackage({ pkg }: { pkg: Order }) {
           </ul>
         </div>
         {/* Zona de Código OTP */}
+        {pkg.status === 'OUT_FOR_DELIVERY' && (
         <div className="mt-8 border-t pt-6">
           <h3 className="text-lg font-semibold text-gray-800 mb-4">Código de Seguridad de Entrega</h3>
           {pkg.delivery_code ? (
-            <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-6 text-center">
-              <p className="text-sm text-blue-800 mb-2 font-medium">
+            <div className="bg-rose-50 border-2 border-rose-200 rounded-lg p-6 text-center">
+              <p className="text-sm text-rose-800 mb-2 font-medium">
                 Dile este número al cadete cuando llegue a tu puerta para recibir tu pedido:
               </p>
-              <p className="text-5xl font-mono font-black text-blue-600 tracking-[0.2em]">
+              <p className="text-5xl font-mono font-black text-rose-600 tracking-[0.2em]">
                 {pkg.delivery_code}
               </p>
             </div>
@@ -124,6 +163,7 @@ export default function LiveTrackingPackage({ pkg }: { pkg: Order }) {
             </div>
           )}
         </div>
+        )}
 
         {/* ESPACIO RESERVADO PARA EL MAPA */}
         {(pkg.status === 'ON_THE_WAY' || pkg.status === 'OUT_FOR_DELIVERY') && (

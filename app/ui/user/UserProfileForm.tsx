@@ -17,7 +17,7 @@ export function UserProfileForm({ user }: { user: any }) {
           name="name"
           type="text" 
           defaultValue={user.name} 
-          className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-gray-900 focus:border-blue-500 focus:ring-blue-500 focus:outline-none" 
+          className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-gray-900 focus:border-rose-500 focus:ring-rose-500 focus:outline-none" 
         />
       </div>
       
@@ -39,7 +39,7 @@ export function UserProfileForm({ user }: { user: any }) {
           name="phone"
           type="tel" 
           defaultValue={user.phone || ''} 
-          className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-gray-900 focus:border-blue-500 focus:ring-blue-500 focus:outline-none" 
+          className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-gray-900 focus:border-rose-500 focus:ring-rose-500 focus:outline-none" 
         />
       </div>
       
@@ -50,7 +50,7 @@ export function UserProfileForm({ user }: { user: any }) {
         <button 
           type="submit" 
           disabled={isPending} 
-          className="w-full bg-blue-600 text-white rounded-lg py-2.5 text-sm font-medium hover:bg-blue-700 transition-colors disabled:opacity-50"
+          className="w-full bg-rose-600 text-white rounded-lg py-2.5 text-sm font-medium hover:bg-rose-700 transition-colors disabled:opacity-50"
         >
           {isPending ? 'Guardando...' : 'Guardar Cambios'}
         </button>

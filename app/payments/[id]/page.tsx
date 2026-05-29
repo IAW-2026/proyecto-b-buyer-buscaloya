@@ -44,7 +44,7 @@ export default function MockPaymentPage({ params }: { params: Promise<{ id: stri
         {/* ESCENARIO 1: Esperando que el usuario elija el destino del pago */}
         {viewState === 'idle' && (
           <div className="animate-in fade-in zoom-in-95 duration-200">
-            <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4 text-xl">
+            <div className="w-12 h-12 bg-rose-50 text-rose-600 rounded-full flex items-center justify-center mx-auto mb-4 text-xl">
               💳
             </div>
             <h2 className="text-2xl font-bold text-gray-800 mb-1">Pasarela de Pagos</h2>
@@ -77,7 +77,7 @@ export default function MockPaymentPage({ params }: { params: Promise<{ id: stri
         {/* ESCENARIO 2: Procesando la petición HTTP hacia el Webhook */}
         {viewState === 'processing' && (
           <div className="flex flex-col items-center py-6">
-            <div className="w-14 h-14 border-4 border-blue-100 border-t-blue-600 rounded-full animate-spin mb-6"></div>
+            <div className="w-14 h-14 border-4 border-rose-100 border-t-rose-600 rounded-full animate-spin mb-6"></div>
             <h3 className="text-xl font-bold text-gray-800 mb-1">Procesando Transacción</h3>
             <p className="text-sm text-gray-500">Notificando de forma segura al sistema...</p>
           </div>

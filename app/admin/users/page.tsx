@@ -19,11 +19,11 @@ export default async function UsersAdminPage({
     const { totalPages, totalUsers } = await fetchUsersPages(search);
 
     return (
-      <div className="min-h-screen bg-black text-white py-10">
-        <div className="max-w-6xl mx-auto bg-neutral-900 rounded-lg shadow-sm border border-neutral-800 p-6">
-          <div className="flex justify-between items-center mb-6">
-            <h1 className="text-2xl font-bold text-white">Gestión de Usuarios</h1>
-            <span className="bg-blue-900 text-blue-200 text-sm font-medium px-3 py-1 rounded-full">
+      <div className="min-h-[calc(100vh-4rem)] bg-gray-50 text-gray-900 py-10">
+        <div className="max-w-6xl mx-auto bg-white rounded-lg shadow-sm border border-neutral-200 p-6">
+          <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
+            <h1 className="text-2xl font-bold text-gray-900">Gestión de Usuarios</h1>
+            <span className="bg-rose-100 text-rose-800 text-sm font-medium px-3 py-1 rounded-full">
               Total: {totalUsers}
             </span>
           </div>
@@ -32,7 +32,7 @@ export default async function UsersAdminPage({
           <Search placeholder="Buscar por nombre..." />
 
           {/* Extraemos la tabla a un componente servidor */}
-          <Suspense fallback={<div className="text-neutral-400">Cargando usuarios...</div>}>
+          <Suspense fallback={<div className="text-gray-500">Cargando usuarios...</div>}>
             <UsersTable currentPage={currentPage} search={search} />
           </Suspense>
 
@@ -43,10 +43,10 @@ export default async function UsersAdminPage({
     );
   } catch (error) {
     return (
-      <div className="min-h-screen bg-black text-white py-10">
-        <div className="max-w-4xl mx-auto p-6 bg-neutral-900 rounded-lg border border-neutral-800">
-          <h2 className="text-lg font-bold text-white">Error de conexión</h2>
-          <p className="text-neutral-300">No se pudo cargar la lista de usuarios. Por favor, intenta de nuevo más tarde.</p>
+      <div className="min-h-[calc(100vh-4rem)] bg-gray-50 text-gray-900 py-10">
+        <div className="max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-sm border border-neutral-200">
+          <h2 className="text-lg font-bold text-gray-900">Error de conexión</h2>
+          <p className="text-gray-600">No se pudo cargar la lista de usuarios. Por favor, intenta de nuevo más tarde.</p>
         </div>
       </div>
     );
