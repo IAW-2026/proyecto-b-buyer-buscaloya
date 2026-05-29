@@ -68,7 +68,7 @@ export function AddressAutocomplete({ initialLat, initialLng, onLocationSelect }
       {/* 1. Buscador con Autocompletado de Mapbox */}
       <div className="relative">
         <label className="block text-sm font-medium text-gray-700 mb-1">Buscar dirección</label>
-        <div className="border border-gray-300 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-blue-500">
+        <div className="border border-gray-300 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-rose-500">
           <SearchBox 
             accessToken={process.env.NEXT_PUBLIC_MAPBOX_API_KEY || ''}
             options={{

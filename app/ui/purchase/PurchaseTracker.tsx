@@ -8,8 +8,7 @@ import { notFound, useRouter } from 'next/navigation';
 const STATUS_MAP: Record<string, string> = {
   'PAYMENT_PENDING': 'Pendiente de pago',
   'PREPARING': 'En preparación',
-  'ON_THE_WAY': 'En camino',
-  'OUT_FOR_DELIVERY': 'En reparto',
+  'OUT_FOR_DELIVERY': 'En camino',
   'DELIVERED': 'Entregado',
   'CANCELLED': 'Cancelado'
 };
@@ -56,27 +55,29 @@ export default function PurchaseTracker({ purchase, packages }: { purchase: Purc
         </div>
 
         <h2 className="text-lg font-semibold text-gray-800 mb-4">Tus paquetes individuales</h2>
-        
+
         <div className="grid gap-4 md:grid-cols-2">
           {packages.map((pkg, index) => (
-            <Link 
-              key={pkg.order_id} 
+            <Link
+              key={pkg.order_id}
               href={`/purchase/packages/${pkg.order_id}`}
-              className="group block border rounded-xl p-5 bg-gray-50 hover:bg-orange-50/30 hover:border-orange-200 transition-all shadow-sm"
+              className="group block border rounded-xl p-5 bg-gray-50 hover:bg-rose-50/50 hover:border-rose-200 transition-all shadow-sm"
             >
               <div className="flex justify-between items-start">
                 <div>
-                  <h3 className="font-bold text-gray-900 group-hover:text-orange-600 transition-colors">
+                  <h3 className="font-bold text-gray-900 group-hover:text-rose-600 transition-colors">
                     {pkg.store_name}
                   </h3>
                   <p className="text-xs text-gray-400 mt-0.5">Paquete #{index + 1}</p>
                 </div>
-                <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-blue-100 text-blue-800">
+                <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${
+                  pkg.status === 'CANCELLED' ? 'bg-rose-100 text-rose-800' : 'bg-green-50 text-green-700'
+                }`}>
                   {STATUS_MAP[pkg.status] || pkg.status}
                 </span>
               </div>
 
-              <div className="mt-6 flex justify-between items-center text-sm text-orange-600 font-medium">
+              <div className="mt-6 flex justify-between items-center text-sm text-rose-600 font-medium">
                 <span>Ver detalle de envío</span>
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 transform group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />

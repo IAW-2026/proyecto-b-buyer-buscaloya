@@ -62,7 +62,7 @@ export default async function UserProfilePage() {
     <main className="max-w-4xl mx-auto p-6 min-h-screen bg-gray-50/50">
       {/* Botón de volver */}
       <div className="mb-6">
-        <Link href="/stores" className="text-sm font-medium text-blue-600 hover:text-blue-800 flex items-center gap-1 transition-colors">
+        <Link href="/stores" className="text-sm font-medium text-rose-600 hover:text-rose-800 flex items-center gap-1 transition-colors">
           &larr; Volver al catálogo
         </Link>
       </div>

@@ -13,7 +13,7 @@ export default function CartItemRow({ item, onRemove }: CartItemRowProps) {
   const price = item.productPrice ?? item.product?.price ?? 0;
 
   return (
-    <div className="p-3 border border-gray-200 rounded mb-3 bg-white">
+    <div className="py-4 border-b border-gray-100 bg-white last:border-0">
       <div className="flex justify-between items-start">
         <div className="flex items-start gap-3">
           {(item.imageUrl || item.product?.image_url) ? (

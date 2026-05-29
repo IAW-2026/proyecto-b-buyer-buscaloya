@@ -115,7 +115,7 @@ export default function AddressManager({ clientId, initialAddresses }: AddressMa
         <h2 className="text-xl font-bold text-gray-900">Direcciones Guardadas</h2>
         <button 
           onClick={() => handleOpenModal()}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors shadow-sm flex items-center gap-1"
+          className="bg-rose-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-rose-700 transition-colors shadow-sm flex items-center gap-1"
         >
           <span>+</span> Nueva Dirección
         </button>
@@ -131,7 +131,7 @@ export default function AddressManager({ clientId, initialAddresses }: AddressMa
             <div key={addr.address_id} className="border border-gray-200 rounded-lg p-4 flex flex-col justify-between bg-gray-50 hover:bg-gray-100 transition-colors">
               <div>
                 <h3 className="font-semibold text-gray-900 flex items-center gap-2">
-                  <span className="text-blue-500 text-lg">📍</span> {addr.title || 'Dirección'}
+                  <span className="text-rose-500 text-lg">📍</span> {addr.title || 'Dirección'}
                 </h3>
                 <p className="text-gray-600 text-sm mt-2 ml-6 leading-relaxed">
                   {addr.street} <br/> {addr.city}
@@ -140,7 +140,7 @@ export default function AddressManager({ clientId, initialAddresses }: AddressMa
               <div className="flex gap-4 mt-5 pt-3 border-t border-gray-200 ml-6">
                 <button 
                   onClick={() => handleOpenModal(addr)}
-                  className="text-sm font-medium text-blue-600 hover:text-blue-800 transition-colors"
+                  className="text-sm font-medium text-rose-600 hover:text-rose-800 transition-colors"
                 >
                   Editar
                 </button>
@@ -181,7 +181,7 @@ export default function AddressManager({ clientId, initialAddresses }: AddressMa
                   defaultValue={editingAddress?.title} 
                   required
                   placeholder="Ej: Mi Casa"
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition-shadow"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:ring-2 focus:ring-rose-500 focus:border-rose-500 focus:outline-none transition-shadow"
                 />
               </div>
 
@@ -233,7 +233,7 @@ export default function AddressManager({ clientId, initialAddresses }: AddressMa
                 <button 
                   type="submit" 
                   disabled={loading}
-                  className="flex-1 py-2.5 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors disabled:bg-blue-400 flex justify-center items-center"
+                  className="flex-1 py-2.5 bg-rose-600 text-white rounded-lg font-medium hover:bg-rose-700 transition-colors disabled:bg-rose-400 flex justify-center items-center"
                 >
                   {loading ? (
                     <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>

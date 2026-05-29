@@ -1,4 +1,4 @@
-﻿import { notFound } from 'next/navigation';
+import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { UserProfileForm } from '@/app/ui/user/UserProfileForm'; 
 import AddressManager from '@/app/ui/user/AddressManager';
@@ -33,7 +33,7 @@ export default async function EditUserPage({ params }: { params: Promise<{ id: s
         
         {/* Encabezado y navegación */}
         <div className="flex items-center space-x-4 mb-4">
-          <Link href="/admin/users" className="text-blue-600 hover:text-blue-800 font-medium transition-colors">
+          <Link href="/admin/users" className="text-rose-600 hover:text-rose-800 font-medium transition-colors">
             &larr; Volver al panel
           </Link>
           <h1 className="text-2xl font-bold text-gray-900">Gestión de Usuario</h1>

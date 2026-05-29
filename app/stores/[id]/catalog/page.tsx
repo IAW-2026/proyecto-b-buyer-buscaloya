@@ -16,7 +16,7 @@ export default async function StoreCatalogPage(props: { params: { id: string } |
       <div className="mb-8">
         <Link 
           href="/stores" 
-          className="text-sm font-medium text-blue-600 hover:text-blue-800 flex items-center mb-4"
+          className="text-sm font-medium text-rose-600 hover:text-rose-800 flex items-center mb-4"
         >
           &larr; Volver a todos los negocios
         </Link>

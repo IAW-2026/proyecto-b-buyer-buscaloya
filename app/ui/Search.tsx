@@ -36,16 +36,16 @@ export default function Search({ placeholder }: { placeholder: string }) {
         Buscar
       </label>
       <div className="relative flex gap-2">
-          <input
-            id="search"
-            value={term}
-            onChange={(e) => setTerm(e.target.value)}
-            placeholder={placeholder}
-            className="w-full rounded-md p-2 pr-10 bg-neutral-800 text-white border border-neutral-700"
-          />
-          <div className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 pointer-events-none flex items-center">
-            <MagnifyingGlassIcon className="h-4 w-4" />
-          </div>
+        <input
+          id="search"
+          value={term}
+          onChange={(e) => setTerm(e.target.value)}
+          placeholder={placeholder}
+          className="w-full rounded-md p-2 pr-10 bg-white text-gray-900 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-transparent placeholder-gray-400"
+        />
+        <div className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none flex items-center">
+          <MagnifyingGlassIcon className="h-4 w-4" />
+        </div>
       </div>
     </div>
   );
