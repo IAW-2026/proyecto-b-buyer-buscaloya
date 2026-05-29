@@ -2,7 +2,8 @@ import { Suspense } from 'react';
 import Search from '@/app/ui/Search';
 import Pagination from '@/app/ui/Pagination';
 import StoresGrid from '@/app/ui/stores/StoresGrid';
-import { fetchStoresWithMeta } from '@/app/stores/queries';
+import WeatherBanner from '@/app/ui/stores/WeatherBanner';
+import { fetchStoresWithMeta, fetchWeatherAlert } from '@/app/stores/queries';
 
 export const dynamic = 'force-dynamic';
 
@@ -12,7 +13,10 @@ export default async function StoresPage({ searchParams }: { searchParams: Promi
   const search = params?.search || '';
 
   try {
-    const { stores, totalPages} = await fetchStoresWithMeta(currentPage, search);
+    const [{ stores, totalPages }, weatherAlert] = await Promise.all([
+      fetchStoresWithMeta(currentPage, search),
+      fetchWeatherAlert()
+    ]);
 
     return (
       <main className="max-w-7xl mx-auto p-6">
@@ -25,7 +29,10 @@ export default async function StoresPage({ searchParams }: { searchParams: Promi
             <Search placeholder="Buscar negocios, categorías..." />
           </div>
         </div>
-          <StoresGrid stores={stores} />
+        <Suspense fallback={null}>
+          <WeatherBanner alert={weatherAlert} />
+        </Suspense>
+        <StoresGrid stores={stores} />
         <div className="mt-8">
           <Pagination totalPages={totalPages} currentPage={currentPage} search={search} />
         </div>
