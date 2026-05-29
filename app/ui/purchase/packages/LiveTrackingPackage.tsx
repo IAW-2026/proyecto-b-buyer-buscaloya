@@ -6,12 +6,11 @@ import { Order } from '@/app/lib/definitions';
 import LiveMap from './LiveMap';
 
 // Orden de los estados para la barra de progreso
-const STATUS_STEPS = ['PAYMENT_PENDING', 'PREPARING', 'ON_THE_WAY', 'OUT_FOR_DELIVERY', 'DELIVERED'];
+const STATUS_STEPS = ['PAYMENT_PENDING', 'PREPARING', 'OUT_FOR_DELIVERY', 'DELIVERED'];
 
 const STATUS_LABELS: Record<string, string> = {
   'PAYMENT_PENDING': 'Confirmando',
   'PREPARING': 'En preparación',
-  'ON_THE_WAY': 'Retirado',
   'OUT_FOR_DELIVERY': 'En camino',
   'DELIVERED': 'Entregado',
   'CANCELLED': 'Cancelado'
@@ -31,7 +30,7 @@ export default function LiveTrackingPackage({ pkg }: { pkg: Order }) {
         router.refresh();
 
         // 2. Si está en viaje, consulta la telemetría en tiempo real por el proxy
-        if (pkg.status === 'ON_THE_WAY' || pkg.status === 'OUT_FOR_DELIVERY') {
+        if (pkg.status === 'OUT_FOR_DELIVERY') {
           try {
             const res = await fetch(`/api/orders/${pkg.order_id}/tracking`);
             if (res.ok) {
