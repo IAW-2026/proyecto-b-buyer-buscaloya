@@ -24,11 +24,11 @@ Para facilitar la corrección y evaluación de las diferentes funcionalidades se
 ### 1. Usuario Final (Cliente)
 *Este usuario permite buscar tiendas, cargar productos al carrito, gestionar direcciones personales y simular una compra.*
 * **Usuario:** `buyer1@buscaloya.com`
-* **Contraseña:** `Prueba1234`
+* **Contraseña:** `buyer_IAW_2026`
 
 *Este usuario contiene una compra ya realizada con un paquete por cada estado posible para visualizar cada uno.*
 * **Usuario:** `buyer2@buscaloya.com`
-* **Contraseña:** `Prueba1234`
+* **Contraseña:** `buyer_IAW_2026`
 
 ### 2. Administrador de la Plataforma
 *Este usuario habilita el acceso exclusivo al Panel Admin (`/admin/users`) para la gestión integral de usuarios, pudiendo editar datos del usuario seleccionado y sus direcciones.*
@@ -40,7 +40,7 @@ Para facilitar la corrección y evaluación de las diferentes funcionalidades se
 ## Características Principales
 
 * **Autenticación Segura:** Control de accesos y flujos de usuarios integrado con Clerk.
-* **Navegación Dinámica por Roles:** Layout inteligente que adapta los menús (`Tiendas`, `Mi Compra`, `Mi Perfil` o `Panel Admin`) según el tipo de usuario logueado.
+* **Navegación Dinámica por Roles:** Layout inteligente que adapta los menús (`Tiendas`, `Mi Compra`, `Mi Perfil` o `Panel Admin`) según el tipo de usuario logueado. Si el usuario está logueado se habilita la navegación a `/stores`, `/purchase` y a`/user` y si además el usuario tiene rol de `system_admin` en la metadata se habilita `/admin/users`.
 * **Gestión de Direcciones Interactiva:** Integración con Mapbox y `next/dynamic` para la selección y autocompletado de ubicaciones mediante mapas en tiempo real sin afectar el rendimiento del servidor.
 * **Ciclo de Vida y Tracking de Pedidos:** Seguimiento de todos los paquetes de la compra. Además, cuando el pedido pasa al estado `OUT_FOR_DELIVERY` (En camino), se integra un mapa interactivo utilizando **MapLibre GL** que permite al usuario visualizar en tiempo real la localización de la tienda, su domicilio y el recorrido del repartidor.
 * **Consumo de API Externa (Clima en Tiempo Real):** Integración mediante `fetch` nativo con el servicio de *WeatherAPI.com* desde el servidor. El sistema procesa la respuesta JSON del clima actual de la ciudad y modifica dinámicamente la interfaz de usuario en `/stores`, alertando a los clientes sobre posibles demoras en la logística de envíos si se detectan condiciones climáticas adversas (como lluvia o tormentas). Para demostrar que funciona siempre se incluyó el aviso también en caso de buen clima.
