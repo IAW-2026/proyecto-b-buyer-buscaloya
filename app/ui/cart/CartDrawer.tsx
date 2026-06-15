@@ -5,17 +5,19 @@ import { useCart } from '@/app/providers/CartProvider';
 import { useRouter } from 'next/navigation';
 import { sendCartAction } from '@/app/lib/actions';
 import { useAddresses } from '@/app/lib/hooks/useAddresses';
-import CartItemRow from './CartItemRow'; // O la ruta correcta donde lo creaste
+import CartItemRow from './CartItemRow';
 import AddressSelector from './AddressSelector';
+import ConfirmCheckoutModal from './ConfirmCheckoutModal';
 
 export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
   const { items, remove, clear } = useCart();
   const router = useRouter();
-  
+
   const { addresses, loading, error: loadError, selectedAddressId, setSelectedAddressId } = useAddresses(isOpen);
-  
+
   const [sending, setSending] = useState(false);
   const [sendError, setSendError] = useState<string | null>(null);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
 
   if (!isOpen) return null;
 
@@ -24,21 +26,25 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
     return s + price * it.quantity;
   }, 0);
 
-  const handleCheckout = async () => {
+  const handleCheckoutClick = () => {
     if (!selectedAddressId) return;
-    if (!confirm('¿Ir a pagar?')) return;
-    
+    setShowConfirmModal(true);
+  };
+
+  const confirmCheckout = async () => {
+    if (!selectedAddressId) return;
+    setShowConfirmModal(false);
     setSending(true);
     setSendError(null);
     try {
       // Obtenemos la respuesta que ahora trae la URL de redirección
       const res = await sendCartAction({ addressId: selectedAddressId, items });
       onClose();
-      
+
       // Usamos router.push() que soporta tanto rutas locales como dominios externos
       router.push(res.redirectUrl);
       setTimeout(() => clear(), 0);
-      
+
     } catch (err: any) {
       console.error('Error sending cart:', err);
       setSendError('No se pudo enviar el pedido. Intenta nuevamente.');
@@ -58,7 +64,7 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
         {/* Zona del Selector de Dirección */}
         <div className="mb-4">
           <label className="block text-sm font-medium text-gray-700 mb-2">Dirección de entrega</label>
-          <AddressSelector 
+          <AddressSelector
             loading={loading}
             error={loadError}
             addresses={addresses}
@@ -73,10 +79,10 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
             <div className="text-gray-500 text-center mt-10">El carrito está vacío.</div>
           ) : (
             items.map((it) => (
-              <CartItemRow 
-                key={`${it.storeId}:${it.productId}`} 
-                item={it} 
-                onRemove={() => remove(it.storeId, it.productId)} 
+              <CartItemRow
+                key={`${it.storeId}:${it.productId}`}
+                item={it}
+                onRemove={() => remove(it.storeId, it.productId)}
               />
             ))
           )}
@@ -85,7 +91,7 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
         {/* Resumen y Envío */}
         <div className="mt-4 border-t pt-4">
           {sendError && <div className="text-red-500 text-sm mb-3 text-center">{sendError}</div>}
-          
+
           <div className="flex justify-between items-center mb-4">
             <div className="text-sm font-medium text-gray-800">Total</div>
             <div className="text-xl font-bold text-black">${totalValue.toLocaleString('es-AR')}</div>
@@ -97,19 +103,25 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
             </button>
             <button
               type="button"
-              onClick={handleCheckout}
+              onClick={handleCheckoutClick}
               disabled={items.length === 0 || !selectedAddressId || loading || sending}
-              className={`flex-1 py-3 rounded-lg font-bold transition-colors ${
-                items.length === 0 || !selectedAddressId || loading || sending 
-                  ? 'bg-gray-200 text-gray-400 cursor-not-allowed' 
+              className={`flex-1 py-3 rounded-lg font-bold transition-colors ${items.length === 0 || !selectedAddressId || loading || sending
+                  ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
                   : 'bg-green-600 text-white hover:bg-green-700'
-              }`}
+                }`}
             >
               {sending ? 'Procesando...' : 'Confirmar Compra'}
             </button>
           </div>
         </div>
       </aside>
+
+      {/* Modal de confirmación */}
+      <ConfirmCheckoutModal
+        isOpen={showConfirmModal}
+        onConfirm={confirmCheckout}
+        onCancel={() => setShowConfirmModal(false)}
+      />
     </div>
   );
 }
