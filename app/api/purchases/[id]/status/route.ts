@@ -14,7 +14,7 @@ export async function PATCH(
       ? authHeader.split(' ')[1] 
       : authHeader;
 
-    if (!token || token !== process.env.PAYMENTS_SERVICE_SECRET) {
+    if (!token || token !== process.env.BUYER_SERVICE_SECRET) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
 

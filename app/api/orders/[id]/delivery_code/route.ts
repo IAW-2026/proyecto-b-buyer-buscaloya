@@ -11,11 +11,11 @@ export async function PATCH(
 
     // 1. Autorización M2M (SERVICE_TOKEN)
     const authHeader = req.headers.get('authorization');
-    const token = authHeader?.startsWith('Bearer ') 
-      ? authHeader.split(' ')[1] 
+    const token = authHeader?.startsWith('Bearer ')
+      ? authHeader.split(' ')[1]
       : authHeader;
 
-    if (!token || token !== process.env.SERVICE_TOKEN) {
+    if (!token || token !== process.env.BUYER_SERVICE_SECRET) {
       return NextResponse.json({
         error: "unauthorized",
         message: "La API Key proporcionada es inválida o no tiene permisos para este servicio.",
@@ -25,7 +25,7 @@ export async function PATCH(
 
     // 2. Parseo del Body
     const body = await req.json();
-    const { customer_id, delivery_code } = body;
+    const { delivery_code } = body;
 
     // 3. Validación estricta: Número entero de exactamente 4 dígitos (ej: 1000 a 9999)
     const isValidCode = Number.isInteger(delivery_code) && delivery_code >= 1000 && delivery_code <= 9999;
@@ -54,18 +54,7 @@ export async function PATCH(
       }, { status: 404 });
     }
 
-    // 5. Validamos que el paquete sea del usuario correcto
-    const realOwnerId = dbResult[0].client_id;
-    
-    if (realOwnerId !== customer_id) {
-      return NextResponse.json({
-        error: "data_mismatch",
-        message: "El customer_id proporcionado no coincide con el dueño real de la orden.",
-        timestamp: now
-      }, { status: 400 });
-    }
-
-    // 6. Prevención de Conflicto (Idempotencia / No sobreescritura)
+    // 5. Prevención de Conflicto (Idempotencia / No sobreescritura)
     if (dbResult[0].delivery_code !== null) {
       return NextResponse.json({
         error: "conflict",
@@ -74,14 +63,14 @@ export async function PATCH(
       }, { status: 409 });
     }
 
-    // 7. Actualización en la base de datos
+    // 6. Actualización en la base de datos
     await sql`
       UPDATE orders 
       SET delivery_code = ${delivery_code} 
       WHERE order_id = ${orderId}
     `;
 
-    // 8. Respuesta de éxito
+    //  7. Respuesta de éxito
     return NextResponse.json(
       { message: "Delivery code synchronized" },
       { status: 200 }
@@ -89,7 +78,7 @@ export async function PATCH(
 
   } catch (error) {
     console.error('Error procesando el webhook de delivery-code:', error);
-    return NextResponse.json({ 
+    return NextResponse.json({
       error: 'internal_server_error',
       message: 'Ocurrió un error inesperado al procesar la solicitud.',
       timestamp: new Date().toISOString()

@@ -41,6 +41,7 @@ export async function GET(
     const response = await fetch(`${deliveryServiceUrl}/deliveries/${orderId}/tracking`, {
       method: 'GET',
       headers: {
+        'Authorization': `Bearer ${process.env.DELIVERY_SERVICE_SECRET}`,
         'Content-Type': 'application/json',
       },
     });

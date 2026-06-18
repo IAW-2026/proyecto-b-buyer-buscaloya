@@ -24,7 +24,7 @@ export async function PATCH(
       ? authHeader.split(' ')[1] 
       : authHeader;
 
-    if (!token || token !== process.env.DELIVERY_SERVICE_SECRET) {
+    if (!token || token !== process.env.BUYER_SERVICE_SECRET) {
       return NextResponse.json({
         error: "unauthorized",
         message: "La API Key proporcionada es inválida o no tiene permisos para este servicio.",

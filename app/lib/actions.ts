@@ -172,12 +172,12 @@ export async function getAddressesAction() {
 }
 
 
-async function realSendCartAction(token: string | null, payload: any) {
+async function realSendCartAction(payload: any) {
   // Retorna el Response del fetch para que el caller pueda leer .ok/.status/.json()
   return await fetch(`${process.env.SELLER_API_URL}/api/seller/orders`, {
     method: 'POST',
     headers: {
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      'Authorization': `Bearer ${process.env.SELLER_SERVICE_SECRET}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify(payload),
@@ -227,7 +227,6 @@ export async function sendCartAction({ addressId, items }: { addressId: string; 
 
     // Consumir API del Vendedor (Mock o Real dinámicamente)
     const isMocking = process.env.USE_MOCKS === 'true'; 
-    const token = getToken ? await getToken() : null;
     
     // Validación de regla de negocio (Una sola compra activa)
     const activePurchases = await sql`
@@ -241,7 +240,7 @@ export async function sendCartAction({ addressId, items }: { addressId: string; 
 
     const resp = isMocking 
       ? await mokedSendCartAction(items, payload.stores) 
-      : await realSendCartAction(token, payload);
+      : await realSendCartAction(payload);
       
     if (!resp.ok) {
       const text = await resp.text().catch(() => '');
@@ -319,7 +318,7 @@ export async function simulatePaymentStatusUpdate(purchaseId: string, status: 'P
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.PAYMENTS_SERVICE_SECRET}` 
+        'Authorization': `Bearer ${process.env.BUYER_SERVICE_SECRET}` 
       },
       body: JSON.stringify({ status })
     });

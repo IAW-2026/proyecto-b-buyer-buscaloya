@@ -2,11 +2,11 @@ import { auth } from '@clerk/nextjs/server';
 import { fetchMockCatalog } from '@/app/lib/mocks';
 import { Product, CatalogResponse } from '@/app/lib/definitions';
 
-async function realFetchCatalog(storeId: string, token: string) {
+async function realFetchCatalog(storeId: string) {
   return await fetch(`${process.env.SELLER_API_URL}/api/stores/${storeId}/catalog`, {
       method: 'GET',
       headers: {
-        'Authorization': `Bearer ${token}`, 
+        'Authorization': `Bearer ${process.env.SELLER_SERVICE_SECRET}`, 
         'Content-Type': 'application/json',
       },
     });
@@ -22,7 +22,7 @@ export async function fetchCatalog(storeId: string): Promise<CatalogResponse> {
   if (!token) throw new Error('No estás autenticado');
 
   try {
-    const response = isMocking ? await fetchMockCatalog(storeId) : await realFetchCatalog(storeId, token);
+    const response = isMocking ? await fetchMockCatalog(storeId) : await realFetchCatalog(storeId);
 
     if (!response.ok) throw new Error(`Error al obtener catálogo: ${response.status}`);
     
