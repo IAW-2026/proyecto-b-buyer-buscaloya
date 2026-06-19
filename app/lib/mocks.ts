@@ -1,10 +1,10 @@
 const MOCKED_STORES = [
-  { id: 'store-123', name: 'Pizzería Don Carlos', description: 'Las mejores pizzas...', category: 'Gastronomía', image_url: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?q=80&w=600&auto=format&fit=crop' },
-  { id: 'store-456', name: 'Librería El Ateneo', description: 'Textos escolares...', category: 'Librería', image_url: 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?q=80&w=600&auto=format&fit=crop' },
-  { id: 'store-789', name: 'TechStore', description: 'Insumos de computación...', category: 'Tecnología', image_url: 'https://images.unsplash.com/photo-1551650975-87deedd944c3?q=80&w=600&auto=format&fit=crop' },
-  { id: 'store-101', name: 'Kiosco Lo de Cacho', description: 'Golosinas...', category: 'Kiosco', image_url: 'https://images.unsplash.com/photo-1552820728-8b83f0c7b4e3?q=80&w=600&auto=format&fit=crop' },
-  { id: 'store-102', name: 'Roti Ya', description: 'Comida casera...', category: 'Gastronomía', image_url: 'https://images.unsplash.com/photo-1551288049-bebda4e38f74?q=80&w=600&auto=format&fit=crop' },
-  { id: 'store-103', name: 'Moda Actual', description: 'La mejor ropa...', category: 'Vestimenta', image_url: 'https://images.unsplash.com/photo-1523275335684-37898b67a9d9?q=80&w=600&auto=format&fit=crop' },
+  { store_id: 'store-123', name: 'Pizzería Don Carlos', description: 'Las mejores pizzas...', category: 'Gastronomía', image_url: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?q=80&w=600&auto=format&fit=crop' },
+  { store_id: 'store-456', name: 'Librería El Ateneo', description: 'Textos escolares...', category: 'Librería', image_url: 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?q=80&w=600&auto=format&fit=crop' },
+  { store_id: 'store-789', name: 'TechStore', description: 'Insumos de computación...', category: 'Tecnología', image_url: 'https://images.unsplash.com/photo-1551650975-87deedd944c3?q=80&w=600&auto=format&fit=crop' },
+  { store_id: 'store-101', name: 'Kiosco Lo de Cacho', description: 'Golosinas...', category: 'Kiosco', image_url: 'https://images.unsplash.com/photo-1552820728-8b83f0c7b4e3?q=80&w=600&auto=format&fit=crop' },
+  { store_id: 'store-102', name: 'Roti Ya', description: 'Comida casera...', category: 'Gastronomía', image_url: 'https://images.unsplash.com/photo-1551288049-bebda4e38f74?q=80&w=600&auto=format&fit=crop' },
+  { store_id: 'store-103', name: 'Moda Actual', description: 'La mejor ropa...', category: 'Vestimenta', image_url: 'https://images.unsplash.com/photo-1523275335684-37898b67a9d9?q=80&w=600&auto=format&fit=crop' },
 ];
 
 const MOCKED_PRODUCTS_BY_STORE: Record<string, Array<{
@@ -64,7 +64,7 @@ export async function fetchMockStores() {
 export async function fetchMockCatalog(storeId: string) {
   await new Promise(r => setTimeout(r, 300));
   const products = MOCKED_PRODUCTS_BY_STORE[storeId] ?? [];
-  const store = MOCKED_STORES.find(s => s.id === storeId);
+  const store = MOCKED_STORES.find(s => s.store_id === storeId);
   const payload = {
     store_name: store?.name ?? null,
     store_image_url: store?.image_url ?? null,
@@ -93,7 +93,7 @@ export async function mokedSendCartAction(items: any[], stores: any[]) {
   // 3. Construir los paquetes cruzando la información del payload con nuestros mocks locales
   const packages = (stores || []).map((store: any) => {
     // Buscamos el nombre real de la tienda en nuestro catálogo mockeado
-    const mockStore = MOCKED_STORES.find(s => s.id === store.store_id);
+    const mockStore = MOCKED_STORES.find(s => s.store_id === store.store_id);
     const storeName = mockStore?.name ?? `Tienda Descocnocida (${store.store_id})`;
 
     const packagedItems = (store.items || []).map((it: any) => {

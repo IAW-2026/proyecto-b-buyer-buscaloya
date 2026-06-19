@@ -10,7 +10,7 @@ export default function StoresGrid({ stores }: { stores: Store[] }) {
         <div className="col-span-full text-center text-gray-500">No hay negocios.</div>
       ) : (
         stores.map((store) => (
-          <Link href={`/stores/${store.id}/catalog`} key={store.id} className="group cursor-pointer">
+          <Link href={`/stores/${store.store_id}/catalog`} key={store.store_id} className="group cursor-pointer">
             <div className="bg-white border border-gray-100 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow h-full flex flex-row items-center p-4 gap-4">
               <div className="h-24 w-24 sm:h-28 sm:w-28 bg-gray-100 rounded-xl overflow-hidden flex-shrink-0 relative">
                 {store.image_url ? (
