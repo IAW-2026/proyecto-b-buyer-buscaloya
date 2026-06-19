@@ -17,6 +17,7 @@ async function fetchAllStoresFromSeller() {
   if (!token) throw new Error('No estás autenticado');
 
   const resp = await fetch(`${process.env.SELLER_API_URL}/api/stores`, {
+    method: 'GET',
     headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
   });
   if (!resp.ok) throw new Error('Error Seller API');
