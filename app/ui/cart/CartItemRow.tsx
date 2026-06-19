@@ -1,7 +1,6 @@
 // app/ui/cart/CartItemRow.tsx
 'use client';
 
-import Image from 'next/image';
 import { CartItem } from '@/app/providers/CartProvider';
 
 interface CartItemRowProps {
@@ -18,12 +17,10 @@ export default function CartItemRow({ item, onRemove }: CartItemRowProps) {
         <div className="flex items-start gap-3">
           {(item.imageUrl || item.product?.image_url) ? (
             <div className="w-16 h-16 relative rounded overflow-hidden">
-              <Image
+              <img
                 src={item.imageUrl || item.product?.image_url}
                 alt={item.productName || item.product?.name || 'Producto'}
-                fill
-                sizes="64px"
-                className="object-cover"
+                className="w-full h-full object-cover"
               />
             </div>
           ) : (

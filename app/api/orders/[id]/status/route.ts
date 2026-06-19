@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import sql from '@/app/lib/db';
+import { stringToUuid } from '@/app/lib/utils';
 
 // Definimos el diccionario de transiciones válidas para proteger la lógica de negocio
 const VALID_TRANSITIONS: Record<string, string[]> = {
@@ -15,7 +16,8 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id: orderId } = await params;
+    const { id } = await params;
+    const orderId = stringToUuid(id);
     const now = new Date().toISOString();
 
     // 1. Autorización M2M (SERVICE_TOKEN)

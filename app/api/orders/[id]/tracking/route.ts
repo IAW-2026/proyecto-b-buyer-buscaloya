@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { MOCK_ROUTE } from '@/app/lib/mocks';
+import { stringToUuid } from '@/app/lib/utils';
 
 
 export async function GET(
@@ -14,7 +15,8 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { id: orderId } = await params;
+    const { id } = await params;
+    const orderId = stringToUuid(id);
     const deliveryServiceUrl = process.env.DELIVERY_SERVICE_URL;
 
     // Mock de tracking

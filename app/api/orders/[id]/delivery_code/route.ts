@@ -1,12 +1,14 @@
 import { NextResponse } from 'next/server';
 import sql from '@/app/lib/db';
+import { stringToUuid } from '@/app/lib/utils';
 
 export async function PATCH(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id: orderId } = await params;
+    const { id } = await params;
+    const orderId = stringToUuid(id);
     const now = new Date().toISOString();
 
     // 1. Autorización M2M (SERVICE_TOKEN)

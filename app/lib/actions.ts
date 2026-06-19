@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { auth } from '@clerk/nextjs/server';
 import { mokedSendCartAction } from './mocks';
+import { stringToUuid } from '@/app/lib/utils';
 
 // ------------------------------------------------------------------
 // LÓGICA DE USUARIOS
@@ -271,7 +272,7 @@ export async function sendCartAction({ addressId, items }: { addressId: string; 
 }
 
 async function createOrderInDB(userId: string, addressId: string, data: any) {  
-  const purchaseId = data.payment_order_id;
+  const purchaseId = stringToUuid(data.payment_order_id);
   const sellerAmount = Number(data.amount ?? 0);
   const queries = [];
 
@@ -283,7 +284,7 @@ async function createOrderInDB(userId: string, addressId: string, data: any) {
 
   // Insertar paquetes (orders) e ítems
   for (const pkg of (data.packages || [])) {
-    const orderId = pkg.package_id;
+    const orderId = stringToUuid(pkg.package_id);
     const storeName = pkg.store_name ?? 'unknown-store';
 
     queries.push(sql`

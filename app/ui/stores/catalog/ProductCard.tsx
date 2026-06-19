@@ -1,6 +1,5 @@
 'use client';
 
-import Image from 'next/image';
 import { Product } from '@/app/lib/definitions';
 import { useCart } from '@/app/providers/CartProvider';
 
@@ -33,11 +32,9 @@ export default function ProductCard({ product, storeId, storeName }: ProductCard
     >
       <div className="w-1/3 min-w-[110px] max-w-[140px] bg-gray-50 relative flex-shrink-0">
         {product.image_url ? (
-          <Image 
+          <img 
             src={product.image_url} 
             alt={product.name} 
-            width={300}
-            height={300}
             className="w-full h-full object-cover"
           />
         ) : (

@@ -1,12 +1,14 @@
 import { NextResponse } from 'next/server';
 import sql from '@/app/lib/db'; 
+import { stringToUuid } from '@/app/lib/utils';
 
 export async function PATCH(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id: purchaseId } = await params;
+    const { id } = await params;
+    const purchaseId = stringToUuid(id);
 
     // 1. Validación de Seguridad M2M
     const authHeader = req.headers.get('authorization');

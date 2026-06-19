@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import Image from 'next/image';
 import { Store } from '@/app/lib/definitions';
 
 export default function StoresGrid({ stores }: { stores: Store[] }) {
@@ -14,12 +13,11 @@ export default function StoresGrid({ stores }: { stores: Store[] }) {
             <div className="bg-white border border-gray-100 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow h-full flex flex-row items-center p-4 gap-4">
               <div className="h-24 w-24 sm:h-28 sm:w-28 bg-gray-100 rounded-xl overflow-hidden flex-shrink-0 relative">
                 {store.image_url ? (
-                  <Image 
+                  <img 
                   src={store.image_url} 
                   alt={`${store.name}'s picture`}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" 
-                  width={200} 
-                  height={200} />
+                  />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs"><span>Sin Imagen</span></div>
                 )}
