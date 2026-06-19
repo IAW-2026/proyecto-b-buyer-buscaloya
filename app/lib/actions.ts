@@ -174,7 +174,7 @@ export async function getAddressesAction() {
 
 async function realSendCartAction(payload: any) {
   // Retorna el Response del fetch para que el caller pueda leer .ok/.status/.json()
-  return await fetch(`${process.env.SELLER_API_URL}/api/seller/orders`, {
+  return await fetch(`${process.env.SELLER_APP_URL}/api/seller/orders`, {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${process.env.SELLER_SERVICE_SECRET}`,

@@ -3,7 +3,7 @@ import { fetchMockCatalog } from '@/app/lib/mocks';
 import { Product, CatalogResponse } from '@/app/lib/definitions';
 
 async function realFetchCatalog(storeId: string, token: string | null) {
-  return await fetch(`${process.env.SELLER_API_URL}/api/stores/${storeId}/catalog`, {
+  return await fetch(`${process.env.SELLER_APP_URL}/api/stores/${storeId}/catalog`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${token}`, 
