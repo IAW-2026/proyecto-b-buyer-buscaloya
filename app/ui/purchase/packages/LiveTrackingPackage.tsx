@@ -6,14 +6,17 @@ import { Order } from '@/app/lib/definitions';
 import LiveMap from './LiveMap';
 
 // Orden de los estados para la barra de progreso
-const STATUS_STEPS = ['PAYMENT_PENDING', 'PREPARING', 'OUT_FOR_DELIVERY', 'DELIVERED'];
+const STATUS_STEPS = ['PAYMENT_PENDING', 'PREPARING', 'COURIER_ASSIGNED', 'PICKED_UP', 'OUT_FOR_DELIVERY', 'DELIVERED'];
 
 const STATUS_LABELS: Record<string, string> = {
   'PAYMENT_PENDING': 'Confirmando',
   'PREPARING': 'En preparación',
+  'COURIER_ASSIGNED': 'Asignado',
+  'PICKED_UP': 'Recogido',
   'OUT_FOR_DELIVERY': 'En camino',
   'DELIVERED': 'Entregado',
-  'CANCELLED': 'Cancelado'
+  'DELIVERY_FAILED': 'Fallo',
+  'CANCELLED_SUCCESSFULLY': 'Cancelado'
 };
 
 export default function LiveTrackingPackage({ pkg }: { pkg: Order }) {
@@ -24,7 +27,7 @@ export default function LiveTrackingPackage({ pkg }: { pkg: Order }) {
   const [courierLocation, setCourierLocation] = useState<{ lat: number; lng: number } | null>(null);
 
   useEffect(() => {
-    if (pkg.status !== 'DELIVERED' && pkg.status !== 'CANCELLED') {
+    if (pkg.status !== 'DELIVERED' && pkg.status !== 'CANCELLED_SUCCESSFULLY' && pkg.status !== 'DELIVERY_FAILED') {
       const interval = setInterval(async () => {
         // 1. Actualiza el estado general en la base de datos (Server-side refresh)
         router.refresh();
@@ -60,7 +63,7 @@ export default function LiveTrackingPackage({ pkg }: { pkg: Order }) {
       </div>
 
       <div className="p-6">
-        {pkg.status === 'CANCELLED' && (
+        {pkg.status === 'CANCELLED_SUCCESSFULLY' && (
           <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-8 rounded-r-lg">
             <div className="flex">
               <div className="flex-shrink-0">
@@ -78,8 +81,26 @@ export default function LiveTrackingPackage({ pkg }: { pkg: Order }) {
           </div>
         )}
 
+        {pkg.status === 'DELIVERY_FAILED' && (
+          <div className="bg-orange-50 border-l-4 border-orange-500 p-4 mb-8 rounded-r-lg">
+            <div className="flex">
+              <div className="flex-shrink-0">
+                <svg className="h-5 w-5 text-orange-500" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div className="ml-3">
+                <h3 className="text-sm font-medium text-orange-800">Entrega Fallida</h3>
+                <p className="text-sm text-orange-700 mt-1">
+                  Hubo un problema al entregar el paquete. Nos contactaremos pronto.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Barra de progreso (Stepper) */}
-        {pkg.status !== 'CANCELLED' && (
+        {pkg.status !== 'CANCELLED_SUCCESSFULLY' && pkg.status !== 'DELIVERY_FAILED' && (
         <div className="mb-8">
           <div className="flex justify-between mb-2">
             {STATUS_STEPS.map((step, index) => {
@@ -166,7 +187,7 @@ export default function LiveTrackingPackage({ pkg }: { pkg: Order }) {
         )}
 
         {/* ESPACIO RESERVADO PARA EL MAPA */}
-        {(pkg.status === 'ON_THE_WAY' || pkg.status === 'OUT_FOR_DELIVERY') && (
+        {(pkg.status === 'COURIER_ASSIGNED' || pkg.status === 'PICKED_UP' || pkg.status === 'OUT_FOR_DELIVERY') && (
           <LiveMap 
             courierLocation={courierLocation}
             destination={{

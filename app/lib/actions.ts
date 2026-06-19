@@ -288,8 +288,8 @@ async function createOrderInDB(userId: string, addressId: string, data: any) {
     const storeName = pkg.store_name ?? 'unknown-store';
 
     queries.push(sql`
-      INSERT INTO orders (order_id, purchase_id, store_name)
-      VALUES (${orderId}, ${purchaseId}, ${storeName})
+      INSERT INTO orders (order_id, purchase_id, store_name, status)
+      VALUES (${orderId}, ${purchaseId}, ${storeName}, 'PAYMENT_PENDING')
     `);
 
     for (const it of (pkg.items || [])) {

@@ -8,9 +8,12 @@ import { notFound, useRouter } from 'next/navigation';
 const STATUS_MAP: Record<string, string> = {
   'PAYMENT_PENDING': 'Pendiente de pago',
   'PREPARING': 'En preparación',
-  'OUT_FOR_DELIVERY': 'En camino',
+  'COURIER_ASSIGNED': 'Cadete asignado',
+  'PICKED_UP': 'En camino a ti',
+  'OUT_FOR_DELIVERY': 'En la puerta',
   'DELIVERED': 'Entregado',
-  'CANCELLED': 'Cancelado'
+  'DELIVERY_FAILED': 'Fallo en entrega',
+  'CANCELLED_SUCCESSFULLY': 'Cancelado'
 };
 
 export default function PurchaseTracker({ purchase, packages }: { purchase: Purchase, packages: Order[] }) {
@@ -71,7 +74,7 @@ export default function PurchaseTracker({ purchase, packages }: { purchase: Purc
                   <p className="text-xs text-gray-400 mt-0.5">Paquete #{index + 1}</p>
                 </div>
                 <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${
-                  pkg.status === 'CANCELLED' ? 'bg-rose-100 text-rose-800' : 'bg-green-50 text-green-700'
+                  (pkg.status === 'CANCELLED_SUCCESSFULLY' || pkg.status === 'DELIVERY_FAILED') ? 'bg-rose-100 text-rose-800' : 'bg-green-50 text-green-700'
                 }`}>
                   {STATUS_MAP[pkg.status] || pkg.status}
                 </span>

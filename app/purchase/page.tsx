@@ -12,7 +12,7 @@ export default async function PurchasesPage() {
   }
 
   if (currentPurchase.status === 'PENDING') {
-    const paymentsURL = process.env.PAYMENTS_SERVICE_URL;
+    const paymentsURL = process.env.PAYMENTS_APP_URL;
     const paymentsCheckoutUrl = `${paymentsURL}/checkout/${currentPurchase.purchase_id}`;
     redirect(paymentsCheckoutUrl);
   }

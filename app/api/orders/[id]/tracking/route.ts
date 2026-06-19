@@ -16,31 +16,31 @@ export async function GET(
     }
 
     const { id } = await params;
-    const orderId = stringToUuid(id);
-    const deliveryServiceUrl = process.env.DELIVERY_SERVICE_URL;
+    const orderId = id;
+    const deliveryServiceUrl = process.env.DELIVERY_APP_URL;
 
     // Mock de tracking
     const isMock = process.env.USE_MOCKS === 'true';
     if (isMock) {
-        const timeInSeconds = Math.floor(Date.now() / 1000);
-        const step = Math.floor(timeInSeconds / 5); 
-        const currentIndex = step % MOCK_ROUTE.length; 
-        
-        const mockedLocation = MOCK_ROUTE[currentIndex];
+      const timeInSeconds = Math.floor(Date.now() / 1000);
+      const step = Math.floor(timeInSeconds / 5);
+      const currentIndex = step % MOCK_ROUTE.length;
 
-        // Simulamos un pequeño delay de red de 500ms para mayor realismo
-        await new Promise(resolve => setTimeout(resolve, 500));
+      const mockedLocation = MOCK_ROUTE[currentIndex];
 
-        // Devolvemos el contrato exacto que espera tu frontend
-        return NextResponse.json({
+      // Simulamos un pequeño delay de red de 500ms para mayor realismo
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      // Devolvemos el contrato exacto que espera tu frontend
+      return NextResponse.json({
         delivery_id: `mock_trip_${orderId}`,
         courier_location: mockedLocation,
         status: "OUT_FOR_DELIVERY"
-        });
+      });
     }
 
     // 2. Consumimos el endpoint oficial de la Delivery App
-    const response = await fetch(`${deliveryServiceUrl}/deliveries/${orderId}/tracking`, {
+    const response = await fetch(`${deliveryServiceUrl}/api/deliveries/${orderId}/tracking`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${process.env.DELIVERY_SERVICE_SECRET}`,
@@ -50,7 +50,7 @@ export async function GET(
 
     if (!response.ok) {
       return NextResponse.json(
-        { error: 'Error al obtener la telemetría del microservicio de Delivery' }, 
+        { error: 'Error al obtener la telemetría del microservicio de Delivery' },
         { status: response.status }
       );
     }
