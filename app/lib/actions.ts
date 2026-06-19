@@ -172,12 +172,12 @@ export async function getAddressesAction() {
 }
 
 
-async function realSendCartAction(payload: any) {
+async function realSendCartAction(payload: any, token: string | null) {
   // Retorna el Response del fetch para que el caller pueda leer .ok/.status/.json()
   return await fetch(`${process.env.SELLER_APP_URL}/api/seller/orders`, {
     method: 'POST',
     headers: {
-      'Authorization': `Bearer ${process.env.SELLER_SERVICE_SECRET}`,
+      'Authorization': `Bearer ${token}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify(payload),
@@ -218,6 +218,8 @@ export async function sendCartAction({ addressId, items }: { addressId: string; 
     const { userId, getToken } = authRes as any;
     if (!userId) throw new Error('Not authenticated');
 
+    const token = await getToken();
+
     // Obtener Dirección Base
     const [addr] = await sql`SELECT street, city, lat, lng FROM addresses WHERE address_id = ${addressId} AND client_id = ${userId}`;
     if (!addr) throw new Error('Address not found');
@@ -240,7 +242,7 @@ export async function sendCartAction({ addressId, items }: { addressId: string; 
 
     const resp = isMocking 
       ? await mokedSendCartAction(items, payload.stores) 
-      : await realSendCartAction(payload);
+      : await realSendCartAction(payload, token);
       
     if (!resp.ok) {
       const text = await resp.text().catch(() => '');
