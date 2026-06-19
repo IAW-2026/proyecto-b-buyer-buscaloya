@@ -68,7 +68,7 @@ export async function PATCH(
 
     await sql`
       UPDATE orders 
-      SET status = ${incomingStatus === 'PAID' ? 'PREPARING' : 'CANCELLED'} 
+      SET status = ${incomingStatus === 'PAID' ? 'PREPARING' : 'CANCELLED_SUCCESSFULLY'} 
       WHERE purchase_id = ${purchaseId}::uuid
     `;
 

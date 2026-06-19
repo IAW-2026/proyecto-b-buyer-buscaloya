@@ -4,11 +4,14 @@ import { stringToUuid } from '@/app/lib/utils';
 
 // Definimos el diccionario de transiciones válidas para proteger la lógica de negocio
 const VALID_TRANSITIONS: Record<string, string[]> = {
-  'PAYMENT_PENDING': ['PREPARING', 'CANCELLED'],
-  'PREPARING': ['OUT_FOR_DELIVERY', 'CANCELLED'],
-  'OUT_FOR_DELIVERY': ['DELIVERED', 'CANCELLED'],
+  'PAYMENT_PENDING': ['PREPARING', 'CANCELLED_SUCCESSFULLY'],
+  'PREPARING': ['COURIER_ASSIGNED', 'CANCELLED_SUCCESSFULLY'],
+  'COURIER_ASSIGNED': ['PICKED_UP', 'CANCELLED_SUCCESSFULLY'],
+  'PICKED_UP': ['OUT_FOR_DELIVERY', 'DELIVERY_FAILED', 'CANCELLED_SUCCESSFULLY'],
+  'OUT_FOR_DELIVERY': ['DELIVERED', 'DELIVERY_FAILED', 'CANCELLED_SUCCESSFULLY'],
   'DELIVERED': [],
-  'CANCELLED': []
+  'DELIVERY_FAILED': [],
+  'CANCELLED_SUCCESSFULLY': []
 };
 
 export async function PATCH(
@@ -84,7 +87,7 @@ export async function PATCH(
     `;
     // 7. Sincronización con la Compra Global (purchases)
   
-    if (incomingStatus === 'DELIVERED' || incomingStatus === 'CANCELLED') {
+    if (incomingStatus === 'DELIVERED' || incomingStatus === 'CANCELLED_SUCCESSFULLY' || incomingStatus === 'DELIVERY_FAILED') {
       // a. Obtenemos a qué compra pertenece este paquete
       const purchaseRes = await sql`
         SELECT purchase_id FROM orders WHERE order_id = ${orderId}
@@ -100,7 +103,7 @@ export async function PATCH(
 
         // c. Verificamos si todos los paquetes ya están en un estado final
         const allFinished = siblingsRes.every(
-          (order) => order.status === 'DELIVERED' || order.status === 'CANCELLED'
+          (order) => order.status === 'DELIVERED' || order.status === 'CANCELLED_SUCCESSFULLY' || order.status === 'DELIVERY_FAILED'
         );
 
         // d. Si todos terminaron, pasamos la compra global a COMPLETED
