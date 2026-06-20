@@ -187,7 +187,7 @@ async function realSendCartAction(payload: any, token: string | null) {
 
 
 //Función de ayuda (Helper) para estructurar los datos
-function buildSellerPayload(addr: any, userId: string, items: any[]) {
+function buildSellerPayload(addr: any, userInfo: any, userId: string, items: any[]) {
   const storesMap: Record<string, { store_id: string; items: Array<{ product_id: string; quantity: number }> }> = {};
   
   for (const it of items || []) {
@@ -207,6 +207,8 @@ function buildSellerPayload(addr: any, userId: string, items: any[]) {
       lng: Number(addr.lng),
     },
     buyer_id: userId,
+    buyer_name: userInfo?.name || 'Cliente',
+    buyer_phone: userInfo?.phone || '',
     stores: Object.values(storesMap),
   };
 }
@@ -225,8 +227,11 @@ export async function sendCartAction({ addressId, items }: { addressId: string; 
     const [addr] = await sql`SELECT street, city, lat, lng FROM addresses WHERE address_id = ${addressId} AND client_id = ${userId}`;
     if (!addr) throw new Error('Address not found');
 
+    // Obtener info del usuario
+    const [userInfo] = await sql`SELECT name, phone FROM users WHERE client_id = ${userId}`;
+
     // Construir el Payload (Delegado a la función helper)
-    const payload = buildSellerPayload(addr, userId, items);
+    const payload = buildSellerPayload(addr, userInfo, userId, items);
 
     // Consumir API del Vendedor (Mock o Real dinámicamente)
     const isMocking = process.env.USE_MOCKS === 'true'; 
