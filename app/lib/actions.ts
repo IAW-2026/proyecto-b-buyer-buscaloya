@@ -349,3 +349,34 @@ export async function simulatePaymentStatusUpdate(purchaseId: string, status: 'P
     throw new Error('No se pudo procesar la simulación de estado');
   }
 }
+
+export async function cancelDeliveryAction(orderId: string) {
+  try {
+    const deliveryUrl = process.env.DELIVERY_APP_URL;
+    const response = await fetch(`${deliveryUrl}/api/deliveries/${orderId}/cancel`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${process.env.DELIVERY_SERVICE_SECRET}`,
+        'Content-Type': 'application/json',
+      }
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text().catch(() => '');
+      console.error('Error al cancelar en la API del delivery:', errorText);
+      throw new Error('No se pudo cancelar el paquete en el delivery.');
+    }
+
+    const data = await response.json();
+    if (data.status === 'CANCELLED_SUCCESSFULLY') {
+      await sql`UPDATE orders SET status = 'CANCELLED_SUCCESSFULLY' WHERE order_id = ${orderId}`;
+      revalidatePath('/purchase');
+      return { success: true };
+    } else {
+      throw new Error('Estado inesperado retornado por el delivery.');
+    }
+  } catch (error) {
+    console.error('Error en cancelDeliveryAction:', error);
+    throw new Error('Error interno al cancelar.');
+  }
+}

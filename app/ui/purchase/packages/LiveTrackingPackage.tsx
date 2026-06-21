@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Order } from '@/app/lib/definitions';
 import LiveMap from './LiveMap';
+import { cancelDeliveryAction } from '@/app/lib/actions';
 
 // Orden de los estados para la barra de progreso
 const STATUS_STEPS = ['PAYMENT_PENDING', 'PREPARING', 'COURIER_ASSIGNED', 'PICKED_UP', 'OUT_FOR_DELIVERY', 'DELIVERED'];
@@ -25,6 +26,7 @@ export default function LiveTrackingPackage({ pkg }: { pkg: Order }) {
   
   // Nuevo estado para guardar la latitud y longitud del repartidor
   const [courierLocation, setCourierLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [isCancelling, setIsCancelling] = useState(false);
 
   useEffect(() => {
     if (pkg.status !== 'DELIVERED' && pkg.status !== 'CANCELLED_SUCCESSFULLY' && pkg.status !== 'DELIVERY_FAILED') {
@@ -183,11 +185,32 @@ export default function LiveTrackingPackage({ pkg }: { pkg: Order }) {
               <p className="text-sm">El código de seguridad se generará cuando el cadete esté en camino.</p>
             </div>
           )}
+
+          {/* Freno de Emergencia */}
+          <div className="mt-6 flex justify-center">
+            <button
+              onClick={async () => {
+                if (confirm('¿Estás seguro que deseas abortar y cancelar el envío?')) {
+                  setIsCancelling(true);
+                  try {
+                    await cancelDeliveryAction(pkg.order_id);
+                  } catch (e) {
+                    alert('Error al cancelar.');
+                    setIsCancelling(false);
+                  }
+                }
+              }}
+              disabled={isCancelling}
+              className="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-lg w-full flex items-center justify-center transition-colors disabled:opacity-50"
+            >
+              {isCancelling ? 'Cancelando...' : 'Abortar Misión (Cancelar Envío)'}
+            </button>
+          </div>
         </div>
         )}
 
         {/* ESPACIO RESERVADO PARA EL MAPA */}
-        {(pkg.status === 'COURIER_ASSIGNED' || pkg.status === 'PICKED_UP' || pkg.status === 'OUT_FOR_DELIVERY') && (
+        {pkg.status === 'OUT_FOR_DELIVERY' && (
           <LiveMap 
             courierLocation={courierLocation}
             destination={{
