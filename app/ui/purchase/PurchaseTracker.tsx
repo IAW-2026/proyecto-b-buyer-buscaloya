@@ -13,7 +13,7 @@ const STATUS_MAP: Record<string, string> = {
   'OUT_FOR_DELIVERY': 'En la puerta',
   'DELIVERED': 'Entregado',
   'DELIVERY_FAILED': 'Fallo en entrega',
-  'CANCELLED_SUCCESSFULLY': 'Cancelado'
+  'CANCELLED': 'Cancelado'
 };
 
 export default function PurchaseTracker({ purchase, packages }: { purchase: Purchase, packages: Order[] }) {
@@ -74,7 +74,7 @@ export default function PurchaseTracker({ purchase, packages }: { purchase: Purc
                   <p className="text-xs text-gray-400 mt-0.5">Paquete #{index + 1}</p>
                 </div>
                 <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${
-                  (pkg.status === 'CANCELLED_SUCCESSFULLY' || pkg.status === 'DELIVERY_FAILED') ? 'bg-rose-100 text-rose-800' : 'bg-green-50 text-green-700'
+                  (pkg.status === 'CANCELLED' || pkg.status === 'DELIVERY_FAILED') ? 'bg-rose-100 text-rose-800' : 'bg-green-50 text-green-700'
                 }`}>
                   {STATUS_MAP[pkg.status] || pkg.status}
                 </span>

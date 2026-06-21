@@ -368,8 +368,8 @@ export async function cancelDeliveryAction(orderId: string) {
     }
 
     const data = await response.json();
-    if (data.status === 'CANCELLED_SUCCESSFULLY') {
-      await sql`UPDATE orders SET status = 'CANCELLED_SUCCESSFULLY' WHERE order_id = ${orderId}`;
+    if (data.status === 'CANCELLED') {
+      await sql`UPDATE orders SET status = 'CANCELLED' WHERE order_id = ${orderId}`;
       revalidatePath('/purchase');
       return { success: true };
     } else {

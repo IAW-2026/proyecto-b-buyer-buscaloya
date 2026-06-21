@@ -7,6 +7,7 @@ import Link from 'next/link';
 import './globals.css';
 import { CartProvider } from './providers/CartProvider';
 import HeaderNav from './ui/layout/HeaderNav';
+import AuthActivityTracker from './ui/AuthActivityTracker';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -45,6 +46,7 @@ export default async function RootLayout({
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased bg-white flex flex-col min-h-screen w-full overflow-x-hidden`}>
         <ClerkProvider>
+          <AuthActivityTracker />
           <CartProvider>
 
             {/* Cabecera Principal */}

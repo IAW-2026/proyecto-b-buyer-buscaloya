@@ -21,7 +21,7 @@ export interface CatalogResponse {
   products: Product[];
 }
 
-export type OrderStatus = 'PAYMENT_PENDING' | 'PREPARING' | 'COURIER_ASSIGNED' | 'PICKED_UP' | 'OUT_FOR_DELIVERY' | 'DELIVERED' | 'DELIVERY_FAILED' | 'CANCELLED_SUCCESSFULLY';
+export type OrderStatus = 'PAYMENT_PENDING' | 'PREPARING' | 'COURIER_ASSIGNED' | 'PICKED_UP' | 'OUT_FOR_DELIVERY' | 'DELIVERED' | 'DELIVERY_FAILED' | 'CANCELLED';
 
 export type PurchaseStatus = 'PENDING' | 'PAID' | 'CANCELLED' | 'COMPLETED';
 

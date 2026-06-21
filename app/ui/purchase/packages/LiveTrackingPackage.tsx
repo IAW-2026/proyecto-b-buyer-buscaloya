@@ -17,7 +17,7 @@ const STATUS_LABELS: Record<string, string> = {
   'OUT_FOR_DELIVERY': 'En camino',
   'DELIVERED': 'Entregado',
   'DELIVERY_FAILED': 'Fallo',
-  'CANCELLED_SUCCESSFULLY': 'Cancelado'
+  'CANCELLED': 'Cancelado'
 };
 
 export default function LiveTrackingPackage({ pkg }: { pkg: Order }) {
@@ -29,7 +29,7 @@ export default function LiveTrackingPackage({ pkg }: { pkg: Order }) {
   const [isCancelling, setIsCancelling] = useState(false);
 
   useEffect(() => {
-    if (pkg.status !== 'DELIVERED' && pkg.status !== 'CANCELLED_SUCCESSFULLY' && pkg.status !== 'DELIVERY_FAILED') {
+    if (pkg.status !== 'DELIVERED' && pkg.status !== 'CANCELLED' && pkg.status !== 'DELIVERY_FAILED') {
       const interval = setInterval(async () => {
         // 1. Actualiza el estado general en la base de datos (Server-side refresh)
         router.refresh();
@@ -65,7 +65,7 @@ export default function LiveTrackingPackage({ pkg }: { pkg: Order }) {
       </div>
 
       <div className="p-6">
-        {pkg.status === 'CANCELLED_SUCCESSFULLY' && (
+        {pkg.status === 'CANCELLED' && (
           <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-8 rounded-r-lg">
             <div className="flex">
               <div className="flex-shrink-0">
@@ -102,7 +102,7 @@ export default function LiveTrackingPackage({ pkg }: { pkg: Order }) {
         )}
 
         {/* Barra de progreso (Stepper) */}
-        {pkg.status !== 'CANCELLED_SUCCESSFULLY' && pkg.status !== 'DELIVERY_FAILED' && (
+        {pkg.status !== 'CANCELLED' && pkg.status !== 'DELIVERY_FAILED' && (
           <div className="mb-8">
             <div className="flex justify-between mb-2">
               {STATUS_STEPS.map((step, index) => {
