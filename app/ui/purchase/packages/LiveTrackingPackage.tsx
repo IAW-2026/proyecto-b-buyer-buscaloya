@@ -27,6 +27,7 @@ export default function LiveTrackingPackage({ pkg }: { pkg: Order }) {
   // Nuevo estado para guardar la latitud y longitud del repartidor
   const [courierLocation, setCourierLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [isCancelling, setIsCancelling] = useState(false);
+  const [showCancelModal, setShowCancelModal] = useState(false);
 
   useEffect(() => {
     if (pkg.status !== 'DELIVERED' && pkg.status !== 'CANCELLED' && pkg.status !== 'DELIVERY_FAILED') {
@@ -184,26 +185,63 @@ export default function LiveTrackingPackage({ pkg }: { pkg: Order }) {
                 <p className="text-sm">El código de seguridad se generará cuando el cadete esté en camino.</p>
               </div>
             )}
+          </div>
+        )}
 
-            {/* Freno de Emergencia */}
-            <div className="mt-6 flex justify-center">
-              <button
-                onClick={async () => {
-                  if (confirm('¿Estás seguro que deseas abortar y cancelar el envío?')) {
+        {/* Freno de Emergencia - Sólo visible en COURIER_ASSIGNED */}
+        {pkg.status === 'COURIER_ASSIGNED' && (
+          <div className="mt-6 flex justify-center">
+            <button
+              onClick={() => setShowCancelModal(true)}
+              disabled={isCancelling}
+              className="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-lg w-full flex items-center justify-center transition-colors disabled:opacity-50"
+            >
+              {isCancelling ? 'Cancelando...' : 'Abortar Misión (Cancelar Envío)'}
+            </button>
+          </div>
+        )}
+
+        {/* Modal de Confirmación de Cancelación */}
+        {showCancelModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 px-4">
+            <div className="bg-white rounded-xl shadow-xl max-w-sm w-full p-6 transform transition-all">
+              <div className="mb-4">
+                <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
+                  <svg className="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                </div>
+                <h3 className="text-lg font-bold text-center text-gray-900 mb-2">¿Cancelar Envío?</h3>
+                <p className="text-sm text-center text-gray-500">
+                  El cadete ya fue asignado. Si cancelas ahora, se le avisará para que no recoja el paquete y la compra será abortada. Esta acción no se puede deshacer.
+                </p>
+              </div>
+              <div className="flex gap-3 mt-6">
+                <button
+                  onClick={() => setShowCancelModal(false)}
+                  disabled={isCancelling}
+                  className="flex-1 px-4 py-2 bg-gray-100 text-gray-700 font-medium rounded-lg hover:bg-gray-200 transition-colors"
+                >
+                  No, mantener
+                </button>
+                <button
+                  onClick={async () => {
                     setIsCancelling(true);
                     try {
                       await cancelDeliveryAction(pkg.order_id);
+                      setShowCancelModal(false);
                     } catch (e) {
-                      alert('Error al cancelar.');
+                      alert('Error al cancelar el envío.');
                       setIsCancelling(false);
+                      setShowCancelModal(false);
                     }
-                  }
-                }}
-                disabled={isCancelling}
-                className="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-lg w-full flex items-center justify-center transition-colors disabled:opacity-50"
-              >
-                {isCancelling ? 'Cancelando...' : 'Abortar Misión (Cancelar Envío)'}
-              </button>
+                  }}
+                  disabled={isCancelling}
+                  className="flex-1 px-4 py-2 bg-red-600 text-white font-medium rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50"
+                >
+                  {isCancelling ? 'Cancelando...' : 'Sí, cancelar'}
+                </button>
+              </div>
             </div>
           </div>
         )}

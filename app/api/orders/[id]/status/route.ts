@@ -39,7 +39,12 @@ export async function PATCH(
 
     // 2. Parseo del Body
     const body = await req.json();
-    const { status: incomingStatus } = body;
+    let { status: incomingStatus } = body;
+
+    // Mapeo por retrocompatibilidad con Delivery App si envía el estado antiguo
+    if (incomingStatus === 'CANCELLED_SUCCESSFULLY') {
+      incomingStatus = 'CANCELLED';
+    }
 
     if (!incomingStatus) {
       return NextResponse.json({ error: 'Falta el campo status' }, { status: 400 });

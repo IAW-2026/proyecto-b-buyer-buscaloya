@@ -368,8 +368,10 @@ export async function cancelDeliveryAction(orderId: string) {
     }
 
     const data = await response.json();
-    if (data.status === 'CANCELLED') {
-      await sql`UPDATE orders SET status = 'CANCELLED' WHERE order_id = ${orderId}`;
+    if (data.status === 'CANCELLED_SUCCESSFULLY' || data.status === 'CANCELLED') {
+      // El microservicio de Delivery se encarga de enviar el Webhook a /api/orders/[id]/status, 
+      // el cual contiene la lógica para actualizar la orden y el purchase global.
+      // Así evitamos condiciones de carrera y dobles escrituras.
       revalidatePath('/purchase');
       return { success: true };
     } else {
