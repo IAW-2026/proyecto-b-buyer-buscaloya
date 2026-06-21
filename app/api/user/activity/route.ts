@@ -10,11 +10,16 @@ export async function POST() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Actualiza el timestamp de última actividad de forma segura
+    // Inserta un nuevo registro en el historial de logs SOLO si no existe uno 
+    // en la misma hora exacta para este usuario.
     await sql`
-      UPDATE users
-      SET last_login_at = CURRENT_TIMESTAMP
-      WHERE client_id = ${userId}
+      INSERT INTO user_logs (client_id, login_time)
+      SELECT ${userId}, CURRENT_TIMESTAMP
+      WHERE NOT EXISTS (
+        SELECT 1 FROM user_logs 
+        WHERE client_id = ${userId} 
+        AND date_trunc('hour', login_time) = date_trunc('hour', CURRENT_TIMESTAMP)
+      )
     `;
 
     return NextResponse.json({ success: true });

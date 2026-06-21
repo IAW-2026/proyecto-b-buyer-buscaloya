@@ -9,7 +9,8 @@ const isPublicRoute = createRouteMatcher([
   '/api/clerk-webhook',
   '/api/purchases/(.*)/status',
   '/api/orders/(.*)/status',
-  '/api/orders/(.*)/delivery_code'
+  '/api/orders/(.*)/delivery_code',
+  '/api/analytics'
 ]);
 
 // 2. Definimos las rutas de administración
