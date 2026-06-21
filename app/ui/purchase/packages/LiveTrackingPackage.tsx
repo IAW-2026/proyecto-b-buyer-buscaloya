@@ -201,30 +201,38 @@ export default function LiveTrackingPackage({ pkg }: { pkg: Order }) {
           </div>
         )}
 
-        {/* Modal de Confirmación de Cancelación */}
+        {/* Modal de Confirmación de Cancelación (Estilo ConfirmCheckoutModal) */}
         {showCancelModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 px-4">
-            <div className="bg-white rounded-xl shadow-xl max-w-sm w-full p-6 transform transition-all">
-              <div className="mb-4">
-                <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
-                  <svg className="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                  </svg>
-                </div>
-                <h3 className="text-lg font-bold text-center text-gray-900 mb-2">¿Cancelar Envío?</h3>
-                <p className="text-sm text-center text-gray-500">
-                  El cadete ya fue asignado. Si cancelas ahora, se le avisará para que no recoja el paquete y la compra será abortada. Esta acción no se puede deshacer.
-                </p>
+          <div className="fixed inset-0 z-[60] flex items-center justify-center">
+            {/* Backdrop */}
+            <div 
+              className="absolute inset-0 bg-black/50 transition-opacity" 
+              onClick={() => { if (!isCancelling) setShowCancelModal(false); }}
+            />
+            
+            {/* Modal Content */}
+            <div className="relative z-[70] bg-white rounded-xl shadow-2xl p-6 w-full max-w-sm mx-4 flex flex-col items-center">
+              <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
+                <svg className="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
               </div>
-              <div className="flex gap-3 mt-6">
+              <h3 className="text-xl font-bold text-gray-900 mb-2">¿Cancelar Envío?</h3>
+              <p className="text-gray-600 text-center mb-6">
+                Estás a punto de abortar la compra. Se le avisará al cadete para que no recoja el paquete. Esta acción no se puede deshacer.
+              </p>
+              
+              <div className="flex gap-3 w-full">
                 <button
+                  type="button"
                   onClick={() => setShowCancelModal(false)}
                   disabled={isCancelling}
-                  className="flex-1 px-4 py-2 bg-gray-100 text-gray-700 font-medium rounded-lg hover:bg-gray-200 transition-colors"
+                  className="flex-1 py-2.5 rounded-lg bg-gray-100 text-gray-800 font-medium hover:bg-gray-200 transition-colors"
                 >
                   No, mantener
                 </button>
                 <button
+                  type="button"
                   onClick={async () => {
                     setIsCancelling(true);
                     try {
@@ -237,7 +245,7 @@ export default function LiveTrackingPackage({ pkg }: { pkg: Order }) {
                     }
                   }}
                   disabled={isCancelling}
-                  className="flex-1 px-4 py-2 bg-red-600 text-white font-medium rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50"
+                  className="flex-1 py-2.5 rounded-lg bg-red-600 text-white font-bold hover:bg-red-700 transition-colors disabled:opacity-50"
                 >
                   {isCancelling ? 'Cancelando...' : 'Sí, cancelar'}
                 </button>

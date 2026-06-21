@@ -30,7 +30,7 @@ export async function updateUserAction(prevState: State | undefined, formData: F
     name: String(formData.get('name') || ''),
     phone: String(formData.get('phone') || '')
   });
-  
+
   if (!parsedData.success) {
     return { success: false, error: 'Datos inválidos' };
   }
@@ -46,7 +46,7 @@ export async function updateUserAction(prevState: State | undefined, formData: F
     console.error('Error actualizando usuario:', error);
     return { success: false, error: 'No se pudo actualizar el usuario' };
   }
-  
+
   // Recargamos ambas vistas (Admin y User)
   revalidatePath(`/admin/users/${client_id}/edit`);
   revalidatePath(`/user`);
@@ -78,11 +78,11 @@ export async function updateAddressAction(prevState: State | undefined, formData
     lat: Number(formData.get('lat') || 0),
     lng: Number(formData.get('lng') || 0)
   });
-  
+
   if (!parsedData.success) {
     return { success: false, error: 'Datos inválidos' };
   }
-    
+
   const { address_id, client_id, title, street, city, lat, lng } = parsedData.data;
   try {
     await sql`
@@ -94,7 +94,7 @@ export async function updateAddressAction(prevState: State | undefined, formData
     console.error('Error actualizando dirección:', error);
     return { success: false, error: 'No se pudo actualizar la dirección' };
   }
-  
+
   // Recargamos ambas vistas (Admin y User)
   revalidatePath(`/admin/users/${client_id}/edit`);
   revalidatePath(`/user`);
@@ -107,7 +107,7 @@ const CreateAddressSchema = z.object({
   street: z.string().min(2).max(200),
   city: z.string().min(2).max(100),
   // Valores por defecto para lat/lng si no usamos un mapa interactivo para elegir
-  lat: z.number().optional().default(-38.7183), 
+  lat: z.number().optional().default(-38.7183),
   lng: z.number().optional().default(-62.2663)
 });
 
@@ -120,13 +120,13 @@ export async function createAddressAction(prevState: State | undefined, formData
     lat: Number(formData.get('lat')) || -38.7183,
     lng: Number(formData.get('lng')) || -62.2663
   });
-  
+
   if (!parsedData.success) {
     return { success: false, error: 'Datos de dirección inválidos' };
   }
-    
+
   const { client_id, title, street, city, lat, lng } = parsedData.data;
-  
+
   try {
     await sql`
       INSERT INTO addresses (client_id, title, street, city, lat, lng)
@@ -136,7 +136,7 @@ export async function createAddressAction(prevState: State | undefined, formData
     console.error('Error creando dirección:', error);
     return { success: false, error: 'No se pudo guardar la dirección' };
   }
-  
+
   // Recargamos ambas vistas (Admin y User)
   revalidatePath(`/admin/users/${client_id}/edit`);
   revalidatePath(`/user`);
@@ -149,7 +149,7 @@ export async function deleteAddressAction(address_id: string, client_id: string)
       DELETE FROM addresses 
       WHERE address_id = ${address_id} AND client_id = ${client_id}
     `;
-    
+
     // Recargamos ambas vistas (Admin y User)
     revalidatePath(`/admin/users/${client_id}/edit`);
     revalidatePath(`/user`);
@@ -189,13 +189,13 @@ async function realSendCartAction(payload: any, token: string | null) {
 //Función de ayuda (Helper) para estructurar los datos
 function buildSellerPayload(addr: any, userInfo: any, userId: string, items: any[]) {
   const storesMap: Record<string, { store_id: string; items: Array<{ product_id: string; quantity: number }> }> = {};
-  
+
   for (const it of items || []) {
     const sid = String(it.storeId ?? it.store_id ?? 'unknown');
     if (!storesMap[sid]) storesMap[sid] = { store_id: sid, items: [] };
-    storesMap[sid].items.push({ 
-      product_id: it.productId ?? it.product_id ?? String(it.productId || ''), 
-      quantity: Number(it.quantity || 0) 
+    storesMap[sid].items.push({
+      product_id: it.productId ?? it.product_id ?? String(it.productId || ''),
+      quantity: Number(it.quantity || 0)
     });
   }
 
@@ -234,49 +234,49 @@ export async function sendCartAction({ addressId, items }: { addressId: string; 
     const payload = buildSellerPayload(addr, userInfo, userId, items);
 
     // Consumir API del Vendedor (Mock o Real dinámicamente)
-    const isMocking = process.env.USE_MOCKS === 'true'; 
-    
+    const isMocking = process.env.USE_MOCKS === 'true';
+
     // Validación de regla de negocio (Una sola compra activa)
     const activePurchases = await sql`
       SELECT purchase_id FROM purchases 
       WHERE client_id = ${userId} AND status NOT IN ('COMPLETED', 'CANCELLED')
     `;
-    
+
     if (activePurchases.length > 0) {
       throw new Error('ACTIVE_PURCHASE_EXISTS');
     }
 
-    const resp = isMocking 
-      ? await mokedSendCartAction(items, payload.stores) 
+    const resp = isMocking
+      ? await mokedSendCartAction(items, payload.stores)
       : await realSendCartAction(payload, token);
-      
+
     if (!resp.ok) {
       const text = await resp.text().catch(() => '');
       throw new Error(`Seller API error: ${resp.status} ${text}`);
     }
-    
+
     const data = await resp.json();
 
     // Persistir en Base de Datos Local
     const purchaseId = await createOrderInDB(userId, addressId, data);
-    
+
     // Calcular URL de redirección
     const externalPaymentsUrl = process.env.PAYMENTS_APP_URL;
-    
-    const redirectUrl = isMocking 
+
+    const redirectUrl = isMocking
       ? `/payments/${purchaseId}` // Va a tu pasarela simulada (que luego ejecuta simulatePaymentSuccess)
       : `${externalPaymentsUrl}/checkout/${purchaseId}`; // Redirige a la app externa real de Payments
-    
+
     // Devolvemos la URL al cliente
     return { sellerResponse: data, purchaseId, redirectUrl };
-    
+
   } catch (err) {
     console.error('sendOrderAction error:', err);
     throw err;
   }
 }
 
-async function createOrderInDB(userId: string, addressId: string, data: any) {  
+async function createOrderInDB(userId: string, addressId: string, data: any) {
   const purchaseId = stringToUuid(data.payment_order_id);
   const sellerAmount = Number(data.amount ?? 0);
   const queries = [];
@@ -321,12 +321,12 @@ async function createOrderInDB(userId: string, addressId: string, data: any) {
 export async function simulatePaymentStatusUpdate(purchaseId: string, status: 'PAID' | 'CANCELLED') {
   try {
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
-    
+
     const response = await fetch(`${appUrl}/api/purchases/${purchaseId}/status`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.BUYER_SERVICE_SECRET}` 
+        'Authorization': `Bearer ${process.env.BUYER_SERVICE_SECRET}`
       },
       body: JSON.stringify({ status })
     });
@@ -343,7 +343,7 @@ export async function simulatePaymentStatusUpdate(purchaseId: string, status: 'P
 
     revalidatePath('/purchase');
     return { success: true };
-    
+
   } catch (error) {
     console.error('Error en el simulador de pagos:', error);
     throw new Error('No se pudo procesar la simulación de estado');
@@ -367,16 +367,8 @@ export async function cancelDeliveryAction(orderId: string) {
       throw new Error('No se pudo cancelar el paquete en el delivery.');
     }
 
-    const data = await response.json();
-    if (data.status === 'CANCELLED_SUCCESSFULLY' || data.status === 'CANCELLED') {
-      // El microservicio de Delivery se encarga de enviar el Webhook a /api/orders/[id]/status, 
-      // el cual contiene la lógica para actualizar la orden y el purchase global.
-      // Así evitamos condiciones de carrera y dobles escrituras.
-      revalidatePath('/purchase');
-      return { success: true };
-    } else {
-      throw new Error('Estado inesperado retornado por el delivery.');
-    }
+    // Si llegamos aquí, la respuesta fue 200 OK
+    return { success: true };
   } catch (error) {
     console.error('Error en cancelDeliveryAction:', error);
     throw new Error('Error interno al cancelar.');
