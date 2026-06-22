@@ -49,11 +49,43 @@ export async function GET(req: Request) {
       ORDER BY DATE(created_at) ASC
     `;
 
-    // 5. Respuesta combinada
+    // 5. Usuarios con más compras (Top 10)
+    const topBuyersByCountRes = await sql`
+      SELECT 
+        u.name,
+        u.email,
+        COUNT(p.purchase_id)::int as total_purchases,
+        SUM(p.amount)::float as total_spent
+      FROM purchases p
+      JOIN users u ON p.client_id = u.client_id
+      WHERE p.status != 'CANCELLED'
+      GROUP BY u.client_id, u.name, u.email
+      ORDER BY total_purchases DESC
+      LIMIT 10
+    `;
+
+    // 6. Usuarios que más gastaron (Top 10)
+    const topBuyersByAmountRes = await sql`
+      SELECT 
+        u.name,
+        u.email,
+        SUM(p.amount)::float as total_spent,
+        COUNT(p.purchase_id)::int as total_purchases
+      FROM purchases p
+      JOIN users u ON p.client_id = u.client_id
+      WHERE p.status != 'CANCELLED'
+      GROUP BY u.client_id, u.name, u.email
+      ORDER BY total_spent DESC
+      LIMIT 10
+    `;
+
+    // 7. Respuesta combinada
     return NextResponse.json({
       active_users_per_day: activeUsersRes,
       activity_by_hour: activityByHourRes,
-      new_users_per_day: newUsersRes
+      new_users_per_day: newUsersRes,
+      top_buyers_by_purchases: topBuyersByCountRes,
+      top_buyers_by_amount: topBuyersByAmountRes
     });
 
   } catch (error) {
